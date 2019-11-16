@@ -1,0 +1,209 @@
+PARSER_BEGIN(Parser)
+package parser;
+
+import errors.env.*;
+import errors.compiler.*;
+import errors.eval.*;
+
+import node.*;
+import node.op.*;
+import node.block.*;
+import node.logic.*;
+import node.types.*;
+
+import env.*;
+
+import compiler.Compiler;
+
+import java.util.HashSet;
+
+/** ID lister. */
+public class Parser {
+    /** Main entry point. */
+    public static void main(String args[]) {
+        if (args.length >= 1 && !(args[0].equals("-c") || args[0].equals("-p"))) {
+          System.out.println("Please use -c for compiling, -p for parsing or nothing for both.");
+          System.exit(-1);
+        }
+
+        parser.Parser parser = new parser.Parser(System.in);
+
+        ASTNode exp;
+        Compiler compiler = null;
+        Environment env = null;
+
+        while (true) {
+            try {
+                exp = parser.Start();
+
+                if (args.length == 0 || args[0].equals("-c")) {
+                    compiler = new Compiler();
+                    exp.compile(compiler);
+                    compiler.end();
+                }
+
+                if (args.length == 0 || args[0].equals("-p")) {
+                    env = new Environment();
+                    System.out.println("Result: " + exp.eval(env));
+                    System.out.println();
+                }
+            } catch (Exception e) {
+                handleErrors(e, compiler, env);
+                parser.ReInit(System.in);
+            }
+        }
+    }
+
+    /*
+        UTILS
+    */
+    private static void handleErrors(Exception e, Compiler compiler, Environment env) {
+      boolean expected = false;
+
+        if (e instanceof CompilerException) {
+            expected = true;
+
+            try {
+              compiler.deleteFiles();
+            } catch (CompilerException ce) {
+              System.err.println(ce.getMessage());
+            }
+        }
+
+        if (e instanceof EvaluationException || e instanceof  EnvironmentException)
+            expected = true;
+
+        if (expected)
+           System.err.println(e.getMessage());
+        else
+          e.printStackTrace();
+    }
+}
+
+PARSER_END(Parser)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\r"
+}
+
+TOKEN :
+{
+  < Num: (["0"-"9"]) + >
+  | < PLUS : "+" >
+  | < MINUS : "-">
+  | < TIMES : "*">
+  | < DIV : "/">
+  | < LPAR : "(" >
+  | < RPAR : ")" >
+  | < EL: "\n" >
+
+  // Decl
+  | < EQ : "=" >
+  | < LET : "let" >
+  | < IN : "in" >
+  | < NEW : "new" >
+  | < END : "end" >
+  //-------
+
+  | < Id: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"] )* >
+}
+
+ASTNode Start():
+{
+  ASTNode n;
+}
+{
+   n = Exp() <EL>
+   { return n; }
+}
+
+ASTNode Exp() :
+{
+  parser.Token op;
+  ASTNode n1, n2;
+}
+{
+    n1 = Term()
+    (
+        ( op = <PLUS> | op = <MINUS> )
+
+        n2 = Term()
+        {
+          if (op.kind == PLUS)
+              n1 = new ASTPlus(n1, n2);
+          else
+              n1 = new ASTSub(n1, n2);
+        }
+    ) *
+    { return n1; }
+}
+
+ASTNode Term() :
+{
+    Token op;
+    ASTNode n1;
+    ASTNode n2;
+}
+{
+  n1 = Fact()
+  (
+    ( op = <TIMES> | op = <DIV> )
+
+    n2 = Term()
+    {
+        if (op.kind == TIMES)
+          n1 = new ASTTimes(n1, n2);
+        else
+          n1 = new ASTDiv(n1, n2);
+    }
+  ) ?
+  { return n1; }
+}
+
+ASTNode Fact() :
+{
+    Token t;
+    ASTNode n;
+}
+{
+    (
+        t = <Num> { n = new ASTNum(Integer.parseInt(t.image)); }
+        | <MINUS> n = Exp() { n = new ASTNeg(n); }
+        | <LPAR> n = Exp() <RPAR>
+        | <LET> n = Decl() <END>
+        | t = <Id> { n = new ASTId(t.image); }
+    )
+    { return n; }
+}
+
+ASTNode Decl() :
+{
+  HashSet<node.block.ASTAssign> assignments;
+  ASTNode n;
+}
+{
+    assignments = Assign() <IN> n = Exp()
+
+    { return new ASTBlock(assignments, n); }
+}
+
+HashSet Assign():
+{
+    Token t;
+    ASTNode n;
+    HashSet<ASTAssign> assignments;
+}
+{
+    { assignments = new HashSet<ASTAssign>(); }
+    (
+        t = <Id> <EQ> n = Exp()
+        {
+            assignments.add(new ASTAssign(t.image, n));
+        }
+    ) *
+
+    { return assignments; }
+}
