@@ -1,4 +1,4 @@
-package node.block;
+package node.logical;
 
 import compiler.Compiler;
 import env.Environment;
@@ -8,30 +8,18 @@ import errors.eval.EvaluationException;
 import node.ASTNode;
 import value.IValue;
 
-public class ASTAssign implements ASTNode {
-  private String id;
-  private ASTNode node;
-
-  public ASTAssign(String id, ASTNode node) {
-    this.id = id;
-    this.node = node;
+public class ASTComp extends ASTLogical {
+  public ASTComp(ASTNode left) {
+    super(left);
   }
 
   @Override
   public IValue eval(Environment env) throws EvaluationException, EnvironmentException {
-    IValue val = node.eval(env);
-
-    env.associate(id, val);
-
-    return null; // Nothing to return
+    return eval(LogicalOperation.COMP, env);
   }
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    compiler.loadStaticLink();
-
-    node.compile(compiler);
-
-    compiler.addFieldToFrame(id);
+    compile(LogicalOperation.COMP, compiler);
   }
 }

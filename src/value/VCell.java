@@ -1,18 +1,18 @@
 package value;
 
 public class VCell implements IValue {
-  private IValue iv;
+  private IValue value;
 
-  VCell(IValue iv) {
-    this.iv = iv;
+  public VCell(IValue value) {
+    this.value = value;
   }
 
-  public IValue getVal() {
-    return iv;
+  public IValue get() {
+    return value;
   }
 
-  public void setVal(IValue iv) {
-    this.iv = iv;
+  public String type() {
+    return "cell";
   }
 
   @Override

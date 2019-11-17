@@ -5,9 +5,11 @@ public enum ByteCode {
   MUL("imul"),
   SUB("isub"),
   DIV("idiv"),
+  NEG("ineg"),
 
   AND("iand"),
   OR("ior"),
+  XOR("ixor"),
 
   PUSH("sipush"),
   DUP("dup"),

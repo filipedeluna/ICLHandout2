@@ -5,16 +5,17 @@ import env.Environment;
 import errors.compiler.CompilerException;
 import errors.env.EnvironmentException;
 import node.ASTNode;
+import value.IValue;
 
-public class ASTId implements ASTNode {
+public class ASTVar implements ASTNode {
   private String id;
 
-  public ASTId(String id) {
+  public ASTVar(String id) {
     this.id = id;
   }
 
   @Override
-  public int eval(Environment env) throws EnvironmentException {
+  public IValue eval(Environment env) throws EnvironmentException {
     return env.find(id);
   }
 

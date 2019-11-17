@@ -6,9 +6,10 @@ import errors.eval.EvaluationException;
 import errors.env.EnvironmentException;
 
 import compiler.Compiler;
+import value.IValue;
 
 public interface ASTNode {
-  int eval(Environment env) throws EvaluationException, EnvironmentException;
+  IValue eval(Environment env) throws EvaluationException, EnvironmentException;
 
   void compile(Compiler compiler) throws CompilerException;
 }

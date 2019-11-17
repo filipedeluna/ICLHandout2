@@ -1,30 +1,25 @@
-package node.op;
+package node.arithmetic;
 
-import compiler.ByteCode;
 import compiler.Compiler;
 import env.Environment;
 import errors.compiler.CompilerException;
 import errors.eval.EvaluationException;
 import errors.env.EnvironmentException;
 import node.ASTNode;
+import value.IValue;
 
-public class ASTSub extends ASTOp {
+public class ASTSub extends ASTArithmetic {
   public ASTSub(ASTNode left, ASTNode right) {
     super(left, right);
   }
 
   @Override
-  public int eval(Environment env) throws EvaluationException, EnvironmentException {
-    int v1 = getLeft().eval(env);
-    int v2 = getRight().eval(env);
-
-    return v1 - v2;
+  public IValue eval(Environment env) throws EvaluationException, EnvironmentException {
+    return eval(ArithmeticOperation.SUB, env);
   }
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    getLeft().compile(compiler);
-    getRight().compile(compiler);
-    compiler.emit(ByteCode.SUB);
+    compile(ArithmeticOperation.SUB, compiler);
   }
 }

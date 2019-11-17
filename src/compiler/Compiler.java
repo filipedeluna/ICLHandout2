@@ -67,7 +67,7 @@ public class Compiler {
     compilerWriter.close();
   }
 
-  public void deleteFiles() throws FailedToDeleteFilesException {
+  public void deleteGeneratedFiles() throws FailedToDeleteFilesException {
     compilerWriter.deleteFiles();
   }
 

@@ -6,6 +6,7 @@ import errors.compiler.CompilerException;
 import errors.env.EnvironmentException;
 import errors.eval.EvaluationException;
 import node.ASTNode;
+import value.IValue;
 
 import java.util.HashSet;
 
@@ -22,14 +23,14 @@ public class ASTBlock implements ASTNode {
     this.block = block;
   }
 
-  public int eval(Environment env) throws EvaluationException, EnvironmentException {
+  public IValue eval(Environment env) throws EvaluationException, EnvironmentException {
     env.beginScope();
 
     if (assignments != null)
       for (ASTAssign assignment : assignments)
         assignment.eval(env);
 
-    int val = block.eval(env);
+    IValue val = block.eval(env);
 
     env.endScope();
 

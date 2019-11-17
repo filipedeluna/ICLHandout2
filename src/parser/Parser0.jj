@@ -6,26 +6,15 @@ import errors.compiler.*;
 import errors.eval.*;
 
 import node.*;
-import node.op.*;
-import node.block.*;
-import node.logic.*;
-import node.types.*;
 
 import env.*;
 
 import compiler.Compiler;
 
-import java.util.HashSet;
-
 /** ID lister. */
 public class Parser {
     /** Main entry point. */
     public static void main(String args[]) {
-        if (args.length >= 1 && !(args[0].equals("-c") || args[0].equals("-p"))) {
-          System.out.println("Please use -c for compiling, -p for parsing or nothing for both.");
-          System.exit(-1);
-        }
-
         parser.Parser parser = new parser.Parser(System.in);
 
         ASTNode exp;
@@ -36,17 +25,15 @@ public class Parser {
             try {
                 exp = parser.Start();
 
-                if (args.length == 0 || args[0].equals("-c")) {
-                    compiler = new Compiler();
-                    exp.compile(compiler);
-                    compiler.end();
-                }
+                // PARSE
+                env = new Environment();
+                System.out.println("Result: " + exp.eval(env));
+                System.out.println();
 
-                if (args.length == 0 || args[0].equals("-p")) {
-                    env = new Environment();
-                    System.out.println("Result: " + exp.eval(env));
-                    System.out.println();
-                }
+                // COMPILE
+                compiler = new Compiler();
+                exp.compile(compiler);
+                compiler.end();
             } catch (Exception e) {
                 handleErrors(e, compiler, env);
                 parser.ReInit(System.in);
@@ -58,25 +45,24 @@ public class Parser {
         UTILS
     */
     private static void handleErrors(Exception e, Compiler compiler, Environment env) {
-      boolean expected = false;
+        boolean expected = false;
 
-        if (e instanceof CompilerException) {
-            expected = true;
-
-            try {
-              compiler.deleteFiles();
-            } catch (CompilerException ce) {
-              System.err.println(ce.getMessage());
-            }
+        try {
+            compiler.deleteGeneratedFiles();
+        } catch (CompilerException ce) {
+            System.err.println(ce.getMessage());
         }
+
+        if (e instanceof CompilerException)
+            expected = true;
 
         if (e instanceof EvaluationException || e instanceof  EnvironmentException)
             expected = true;
 
         if (expected)
-           System.err.println(e.getMessage());
+            System.err.println(e.getMessage());
         else
-          e.printStackTrace();
+            e.printStackTrace();
     }
 }
 

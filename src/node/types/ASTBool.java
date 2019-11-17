@@ -8,14 +8,14 @@ import errors.eval.EvaluationException;
 import errors.eval.UnexpectedTypeException;
 import node.ASTNode;
 import value.IValue;
-import value.VInt;
+import value.VBool;
 
-public class ASTNum implements ASTNode {
+public class ASTBool implements ASTNode {
   private IValue val;
 
-  public ASTNum(IValue val) throws EvaluationException {
-    if (!(val instanceof VInt))
-      throw new UnexpectedTypeException(val.type(), "int");
+  public ASTBool(IValue val) throws EvaluationException {
+    if (!(val instanceof VBool))
+      throw new UnexpectedTypeException(val.type(), "bool");
 
     this.val = val;
   }
@@ -27,6 +27,8 @@ public class ASTNum implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    compiler.emit(ByteCode.PUSH, String.valueOf(val));
+    boolean b = ((VBool) val).get();
+
+    compiler.emit(ByteCode.PUSH, b ? "1" : "0");
   }
 }

@@ -6,9 +6,9 @@ import errors.compiler.*;
 import errors.eval.*;
 
 import node.*;
-import node.op.*;
+import node.arithmetic.ASTNeg;
+import node.arithmetic.*;
 import node.block.*;
-import node.logic.*;
 import node.types.*;
 
 import env.*;
@@ -64,7 +64,7 @@ public class Parser implements ParserConstants {
             expected = true;
 
             try {
-              compiler.deleteFiles();
+              compiler.deleteGeneratedFiles();
             } catch (CompilerException ce) {
               System.err.println(ce.getMessage());
             }
@@ -116,7 +116,7 @@ public class Parser implements ParserConstants {
       }
       n2 = Term();
           if (op.kind == PLUS)
-              n1 = new ASTPlus(n1, n2);
+              n1 = new ASTAdd(n1, n2);
           else
               n1 = new ASTSub(n1, n2);
     }
@@ -146,7 +146,7 @@ public class Parser implements ParserConstants {
       }
       n2 = Term();
         if (op.kind == TIMES)
-          n1 = new ASTTimes(n1, n2);
+          n1 = new ASTMul(n1, n2);
         else
           n1 = new ASTDiv(n1, n2);
       break;
@@ -183,7 +183,7 @@ public class Parser implements ParserConstants {
       break;
     case Id:
       t = jj_consume_token(Id);
-                     n = new ASTId(t.image);
+                     n = new ASTVar(t.image);
       break;
     default:
       jj_la1[4] = jj_gen;
