@@ -2,16 +2,15 @@ package node.arithmetic;
 
 import compiler.ByteCode;
 import compiler.Compiler;
-import env.Environment;
+import env.Interpreter;
 import errors.compiler.CompilerException;
-import errors.env.EnvironmentException;
-import errors.eval.EvaluationException;
-import errors.eval.IncompatibleTypesException;
+import errors.interpreter.InterpreterException;
+import errors.interpreter.IncompatibleTypesException;
 import node.ASTNode;
 import value.IValue;
 import value.VInt;
 
-public abstract class ASTArithmetic implements ASTNode {
+abstract class ASTArithmetic implements ASTNode {
   private ASTNode left;
   private ASTNode right;
 
@@ -25,9 +24,9 @@ public abstract class ASTArithmetic implements ASTNode {
     this.right = node;
   }
 
-  protected IValue eval(ArithmeticOperation operation, Environment env) throws EvaluationException, EnvironmentException {
-    IValue v1 = left.eval(env);
-    IValue v2 = right.eval(env);
+  protected IValue eval(ArithmeticOperation operation, Interpreter interpreter) throws InterpreterException {
+    IValue v1 = left.eval(interpreter);
+    IValue v2 = right.eval(interpreter);
 
     if (v1 instanceof VInt && v2 instanceof VInt) {
       int i1 = ((VInt) v1).get();

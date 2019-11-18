@@ -1,21 +1,20 @@
 package node.logical;
 
 import compiler.Compiler;
-import env.Environment;
+import env.Interpreter;
 import errors.compiler.CompilerException;
-import errors.env.EnvironmentException;
-import errors.eval.EvaluationException;
+import errors.interpreter.InterpreterException;
 import node.ASTNode;
 import value.IValue;
 
-public class ASTAnd extends ASTLogical {
+public final class ASTAnd extends ASTLogical {
   public ASTAnd(ASTNode left, ASTNode right) {
     super(left, right);
   }
 
   @Override
-  public IValue eval(Environment env) throws EvaluationException, EnvironmentException {
-    return eval(LogicalOperation.AND, env);
+  public IValue eval(Interpreter interpreter) throws InterpreterException {
+    return eval(LogicalOperation.AND, interpreter);
   }
 
   @Override

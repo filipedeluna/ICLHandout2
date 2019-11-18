@@ -2,7 +2,7 @@ package compiler;
 
 import java.util.ArrayList;
 
-class CompilerFrameField {
+final class CompilerFrameField {
   private ArrayList<String> frameList;
   private String fieldId;
 

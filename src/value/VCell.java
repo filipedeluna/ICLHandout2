@@ -1,17 +1,17 @@
 package value;
 
-public class VCell implements IValue {
-  private IValue value;
+public final class VCell implements IValue {
+  private int address;
 
-  public VCell(IValue value) {
-    this.value = value;
+  public VCell(int address) {
+    this.address = address;
   }
 
-  public IValue get() {
-    return value;
+  public int getAddress() {
+    return address;
   }
 
-  public String type() {
+  public String typeToString() {
     return "cell";
   }
 

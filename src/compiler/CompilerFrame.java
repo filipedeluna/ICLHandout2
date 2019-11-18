@@ -6,7 +6,7 @@ import errors.compiler.CompilerUndefinedVariableException;
 
 import java.util.ArrayList;
 
-class CompilerFrame {
+final class CompilerFrame {
   private String frameId;
   private CompilerFrame parentFrame;
   private ArrayList<String> fields;

@@ -5,7 +5,7 @@ import errors.compiler.FailedToDeleteFilesException;
 import errors.compiler.OutputFileWriteException;
 import errors.compiler.VariableReferencingException;
 
-public class Compiler {
+public final class Compiler {
   private CompilerWriter compilerWriter;
   private int frameIdCounter;
   private CompilerFrame currentFrame;

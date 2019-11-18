@@ -1,20 +1,19 @@
 package node.block;
 
 import compiler.Compiler;
-import env.Environment;
+import env.Interpreter;
 import errors.compiler.CompilerException;
-import errors.env.EnvironmentException;
-import errors.eval.EvaluationException;
+import errors.interpreter.InterpreterException;
 import node.ASTNode;
 import value.IValue;
 
 import java.util.HashSet;
 
 public class ASTBlock implements ASTNode {
-  private HashSet<ASTAssign> assignments;
+  private HashSet<ASTAssignVar> assignments;
   private ASTNode block;
 
-  public ASTBlock(HashSet<ASTAssign> assignments, ASTNode block) {
+  public ASTBlock(HashSet<ASTAssignVar> assignments, ASTNode block) {
     this.assignments = assignments;
     this.block = block;
   }
@@ -23,16 +22,16 @@ public class ASTBlock implements ASTNode {
     this.block = block;
   }
 
-  public IValue eval(Environment env) throws EvaluationException, EnvironmentException {
-    env.beginScope();
+  public IValue eval(Interpreter interpreter) throws InterpreterException {
+    interpreter.beginEnvScope();
 
     if (assignments != null)
-      for (ASTAssign assignment : assignments)
-        assignment.eval(env);
+      for (ASTAssignVar assignment : assignments)
+        assignment.eval(interpreter);
 
-    IValue val = block.eval(env);
+    IValue val = block.eval(interpreter);
 
-    env.endScope();
+    interpreter.endEnvScope();
 
     return val;
   }
@@ -42,7 +41,7 @@ public class ASTBlock implements ASTNode {
     compiler.beginFrame();
 
     if (assignments != null)
-      for (ASTAssign assignment : assignments)
+      for (ASTAssignVar assignment : assignments)
         assignment.compile(compiler);
 
     block.compile(compiler);

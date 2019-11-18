@@ -1,6 +1,6 @@
 package value;
 
-public class VInt implements IValue {
+public final class VInt implements IValue {
   private int value;
 
   public VInt(int value) {
@@ -11,7 +11,7 @@ public class VInt implements IValue {
     return value;
   }
 
-  public String type() {
+  public String typeToString() {
     return "int";
   }
 

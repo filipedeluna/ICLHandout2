@@ -1,6 +1,6 @@
 package value;
 
-public class VBool implements IValue {
+public final class VBool implements IValue {
   private boolean value;
 
   public VBool(boolean value) {
@@ -11,7 +11,7 @@ public class VBool implements IValue {
     return value;
   }
 
-  public String type() {
+  public String typeToString() {
     return "bool";
   }
 

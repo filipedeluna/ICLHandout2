@@ -1,15 +1,14 @@
 package node;
 
-import env.Environment;
+import env.Interpreter;
 import errors.compiler.CompilerException;
-import errors.eval.EvaluationException;
-import errors.env.EnvironmentException;
+import errors.interpreter.InterpreterException;
 
 import compiler.Compiler;
 import value.IValue;
 
 public interface ASTNode {
-  IValue eval(Environment env) throws EvaluationException, EnvironmentException;
+  IValue eval(Interpreter interpreter) throws InterpreterException;
 
   void compile(Compiler compiler) throws CompilerException;
 }

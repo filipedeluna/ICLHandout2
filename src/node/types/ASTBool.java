@@ -2,26 +2,26 @@ package node.types;
 
 import compiler.ByteCode;
 import compiler.Compiler;
-import env.Environment;
+import env.Interpreter;
 import errors.compiler.CompilerException;
-import errors.eval.EvaluationException;
-import errors.eval.UnexpectedTypeException;
+import errors.interpreter.InterpreterException;
+import errors.interpreter.UnexpectedTypeException;
 import node.ASTNode;
 import value.IValue;
 import value.VBool;
 
-public class ASTBool implements ASTNode {
+public final class ASTBool implements ASTNode {
   private IValue val;
 
-  public ASTBool(IValue val) throws EvaluationException {
+  public ASTBool(IValue val) throws InterpreterException {
     if (!(val instanceof VBool))
-      throw new UnexpectedTypeException(val.type(), "bool");
+      throw new UnexpectedTypeException(val.typeToString(), "bool");
 
     this.val = val;
   }
 
   @Override
-  public IValue eval(Environment env) {
+  public IValue eval(Interpreter interpreter) {
     return val;
   }
 

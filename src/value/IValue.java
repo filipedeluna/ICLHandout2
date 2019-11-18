@@ -3,7 +3,7 @@ package value;
 public interface IValue {
   void show();
 
-  String type();
+  String typeToString();
 
   @Override
   String toString();

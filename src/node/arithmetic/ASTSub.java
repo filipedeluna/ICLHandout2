@@ -1,21 +1,20 @@
 package node.arithmetic;
 
 import compiler.Compiler;
-import env.Environment;
+import env.Interpreter;
 import errors.compiler.CompilerException;
-import errors.eval.EvaluationException;
-import errors.env.EnvironmentException;
+import errors.interpreter.InterpreterException;
 import node.ASTNode;
 import value.IValue;
 
-public class ASTSub extends ASTArithmetic {
+public final class ASTSub extends ASTArithmetic {
   public ASTSub(ASTNode left, ASTNode right) {
     super(left, right);
   }
 
   @Override
-  public IValue eval(Environment env) throws EvaluationException, EnvironmentException {
-    return eval(ArithmeticOperation.SUB, env);
+  public IValue eval(Interpreter interpreter) throws InterpreterException {
+    return eval(ArithmeticOperation.SUB, interpreter);
   }
 
   @Override

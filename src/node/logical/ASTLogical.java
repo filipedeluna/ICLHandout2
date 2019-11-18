@@ -2,16 +2,15 @@ package node.logical;
 
 import compiler.ByteCode;
 import compiler.Compiler;
-import env.Environment;
+import env.Interpreter;
 import errors.compiler.CompilerException;
-import errors.env.EnvironmentException;
-import errors.eval.EvaluationException;
-import errors.eval.IncompatibleTypesException;
+import errors.interpreter.InterpreterException;
+import errors.interpreter.IncompatibleTypesException;
 import node.ASTNode;
 import value.IValue;
 import value.VBool;
 
-public abstract class ASTLogical implements ASTNode {
+abstract class ASTLogical implements ASTNode {
   private ASTNode left;
   private ASTNode right;
 
@@ -25,9 +24,9 @@ public abstract class ASTLogical implements ASTNode {
     this.right = node;
   }
 
-  protected IValue eval(LogicalOperation operation, Environment env) throws EvaluationException, EnvironmentException {
-    IValue v1 = left.eval(env);
-    IValue v2 = right.eval(env);
+  protected IValue eval(LogicalOperation operation, Interpreter interpreter) throws InterpreterException {
+    IValue v1 = left.eval(interpreter);
+    IValue v2 = right.eval(interpreter);
 
     if (v1 instanceof VBool && v2 instanceof VBool) {
       boolean b1 = ((VBool) v1).get();

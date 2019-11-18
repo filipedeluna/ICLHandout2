@@ -2,26 +2,26 @@ package node.types;
 
 import compiler.ByteCode;
 import compiler.Compiler;
-import env.Environment;
+import env.Interpreter;
 import errors.compiler.CompilerException;
-import errors.eval.EvaluationException;
-import errors.eval.UnexpectedTypeException;
+import errors.interpreter.InterpreterException;
+import errors.interpreter.UnexpectedTypeException;
 import node.ASTNode;
 import value.IValue;
 import value.VInt;
 
-public class ASTNum implements ASTNode {
+public final class ASTNum implements ASTNode {
   private IValue val;
 
-  public ASTNum(IValue val) throws EvaluationException {
+  public ASTNum(IValue val) throws InterpreterException {
     if (!(val instanceof VInt))
-      throw new UnexpectedTypeException(val.type(), "int");
+      throw new UnexpectedTypeException(val.typeToString(), "int");
 
     this.val = val;
   }
 
   @Override
-  public IValue eval(Environment env) {
+  public IValue eval(Interpreter interpreter) {
     return val;
   }
 

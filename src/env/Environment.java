@@ -1,22 +1,25 @@
 package env;
 
-import errors.env.EnvironmentException;
-import errors.env.OutsideOfScopeException;
-import errors.env.UndefinedVariableException;
-import errors.env.VariableAlreadyDefinedException;
+import errors.interpreter.InterpreterException;
+import errors.interpreter.OutsideOfScopeException;
+import errors.interpreter.UndefinedVariableException;
+import errors.interpreter.VariableAlreadyDefinedException;
 import value.IValue;
+import value.VCell;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map.Entry;
 
-public class Environment {
-  private ArrayDeque<HashMap<String, Integer>> scopes;
+final class Environment {
+  private ArrayDeque<HashMap<String, IValue>> scopes;
 
-  public Environment() {
+  Environment() {
     this.scopes = new ArrayDeque<>();
   }
 
-  public void beginScope() {
+  void beginScope() {
     scopes.push(new HashMap<>());
   }
 
@@ -24,7 +27,7 @@ public class Environment {
     scopes.pop();
   }
 
-  public void associate(String id, IValue value) throws EnvironmentException {
+  void associate(String id, IValue value) throws InterpreterException {
     if (scopes.size() == 0 || scopes.peek() == null)
       throw new OutsideOfScopeException(id);
 
@@ -36,11 +39,25 @@ public class Environment {
     scope.put(id, value);
   }
 
-  public IValue find(String id) throws EnvironmentException {
-    for (HashMap<String, Integer> scope : scopes) {
+  IValue find(String id) throws InterpreterException {
+    for (HashMap<String, IValue> scope : scopes) {
       if (scope.get(id) != null)
         return scope.get(id);
     }
     throw new UndefinedVariableException(id);
+  }
+
+  // Return all the values from current scope whose
+  // values represent cells
+  HashSet<VCell> currentScopeCells() {
+    HashSet<VCell> scopeCells = new HashSet<>();
+
+    if (scopes.peek() != null)
+      for (Entry<String, IValue> entry : scopes.peek().entrySet()) {
+        if (entry.getValue() instanceof VCell)
+          scopeCells.add((VCell) entry.getValue());
+      }
+
+    return scopeCells;
   }
 }

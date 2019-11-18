@@ -1,13 +1,13 @@
 package node.types;
 
 import compiler.Compiler;
-import env.Environment;
+import env.Interpreter;
 import errors.compiler.CompilerException;
-import errors.env.EnvironmentException;
+import errors.interpreter.InterpreterException;
 import node.ASTNode;
 import value.IValue;
 
-public class ASTVar implements ASTNode {
+public final class ASTVar implements ASTNode {
   private String id;
 
   public ASTVar(String id) {
@@ -15,8 +15,8 @@ public class ASTVar implements ASTNode {
   }
 
   @Override
-  public IValue eval(Environment env) throws EnvironmentException {
-    return env.find(id);
+  public IValue eval(Interpreter interpreter) throws InterpreterException {
+    return interpreter.find(id);
   }
 
   @Override
