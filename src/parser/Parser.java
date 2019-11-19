@@ -200,7 +200,7 @@ public class Parser implements ParserConstants {
     assignments = Assign();
     jj_consume_token(IN);
     n = Exp();
-      {if (true) return new ASTBlock(assignments, n);}
+      {if (true) return new ASTLet(assignments, n);}
     throw new Error("Missing return statement in function");
   }
 

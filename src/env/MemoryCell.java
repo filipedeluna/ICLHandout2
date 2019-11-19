@@ -11,6 +11,11 @@ final class MemoryCell {
     references = 0;
   }
 
+  MemoryCell(MemoryCell cell) {
+    value = cell.getValue();
+    references = cell.references();
+  }
+
   void incReferences() {
     references++;
   }

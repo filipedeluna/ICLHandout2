@@ -2,7 +2,6 @@ package env;
 
 import errors.interpreter.InterpreterException;
 import errors.interpreter.OutsideOfScopeException;
-import errors.interpreter.UndefinedVariableException;
 import errors.interpreter.VariableAlreadyDefinedException;
 import value.IValue;
 import value.VCell;
@@ -27,7 +26,7 @@ final class Environment {
     scopes.pop();
   }
 
-  void associate(String id, IValue value) throws InterpreterException {
+  void assign(String id, IValue value) throws InterpreterException {
     if (scopes.size() == 0 || scopes.peek() == null)
       throw new OutsideOfScopeException(id);
 
@@ -39,12 +38,13 @@ final class Environment {
     scope.put(id, value);
   }
 
-  IValue find(String id) throws InterpreterException {
+  IValue find(String id) {
     for (HashMap<String, IValue> scope : scopes) {
       if (scope.get(id) != null)
         return scope.get(id);
     }
-    throw new UndefinedVariableException(id);
+
+    return null;
   }
 
   // Return all the values from current scope whose

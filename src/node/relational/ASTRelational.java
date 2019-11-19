@@ -1,6 +1,9 @@
 package node.relational;
 
+import compiler.Compiler;
 import env.Interpreter;
+import errors.compiler.CompilerException;
+import errors.compiler.UndefinedOperationException;
 import errors.interpreter.InterpreterException;
 import errors.interpreter.IncompatibleTypesException;
 import node.ASTNode;
@@ -8,16 +11,19 @@ import value.IValue;
 import value.VBool;
 import value.VInt;
 
-abstract class ASTRelational implements ASTNode {
+public class ASTRelational implements ASTNode {
+  private RelationalOperation operation;
   private ASTNode left;
   private ASTNode right;
 
-  ASTRelational(ASTNode left, ASTNode right) {
+  public ASTRelational(RelationalOperation operation, ASTNode left, ASTNode right) {
+    this.operation = operation;
     this.left = left;
     this.right = right;
   }
 
-  protected IValue eval(RelationalOperation operation, Interpreter interpreter) throws InterpreterException {
+  @Override
+  public IValue eval(Interpreter interpreter) throws InterpreterException {
     IValue v1 = left.eval(interpreter);
     IValue v2 = right.eval(interpreter);
 
@@ -54,5 +60,13 @@ abstract class ASTRelational implements ASTNode {
     }
 
     throw new IncompatibleTypesException(operation.name(), v1, v2);
+  }
+
+  @Override
+  public void compile(Compiler compiler) throws CompilerException {
+    switch (operation) {
+      default:
+        throw new UndefinedOperationException(operation);
+    }
   }
 }

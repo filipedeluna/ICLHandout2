@@ -4,27 +4,28 @@ import compiler.ByteCode;
 import compiler.Compiler;
 import env.Interpreter;
 import errors.compiler.CompilerException;
+import errors.compiler.UndefinedOperationException;
 import errors.interpreter.InterpreterException;
 import errors.interpreter.IncompatibleTypesException;
+import errors.interpreter.InvalidOperationArgumentsException;
 import node.ASTNode;
 import value.IValue;
 import value.VBool;
 
-abstract class ASTLogical implements ASTNode {
+public class ASTLogical implements ASTNode {
+  private LogicalOperation operation;
   private ASTNode left;
   private ASTNode right;
 
-  ASTLogical(ASTNode left, ASTNode right) {
+  public ASTLogical(LogicalOperation operation, ASTNode left, ASTNode right) {
+    this.operation = operation;
     this.left = left;
     this.right = right;
   }
 
-  ASTLogical(ASTNode node) {
-    this.left = node;
-    this.right = node;
-  }
 
-  protected IValue eval(LogicalOperation operation, Interpreter interpreter) throws InterpreterException {
+  @Override
+  public IValue eval(Interpreter interpreter) throws InterpreterException {
     IValue v1 = left.eval(interpreter);
     IValue v2 = right.eval(interpreter);
 
@@ -37,15 +38,14 @@ abstract class ASTLogical implements ASTNode {
           return new VBool(b1 && b2);
         case OR:
           return new VBool(b1 || b2);
-        case COMP:
-          return new VBool(!b1);
       }
     }
 
     throw new IncompatibleTypesException(operation.name(), v1, v2);
   }
 
-  protected void compile(LogicalOperation operation, Compiler compiler) throws CompilerException {
+  @Override
+  public void compile(Compiler compiler) throws CompilerException {
     left.compile(compiler);
     right.compile(compiler);
 
@@ -56,10 +56,8 @@ abstract class ASTLogical implements ASTNode {
       case OR:
         compiler.emit(ByteCode.OR);
         break;
-      case COMP:
-        compiler.emit(ByteCode.PUSH, "-1");
-        compiler.emit(ByteCode.XOR);
-        break;
+      default:
+        throw new UndefinedOperationException(operation);
     }
   }
 }

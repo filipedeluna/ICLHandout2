@@ -4,27 +4,27 @@ import compiler.ByteCode;
 import compiler.Compiler;
 import env.Interpreter;
 import errors.compiler.CompilerException;
-import errors.interpreter.InterpreterException;
+import errors.compiler.UndefinedOperationException;
+import errors.interpreter.DivideByZeroException;
 import errors.interpreter.IncompatibleTypesException;
+import errors.interpreter.InterpreterException;
 import node.ASTNode;
 import value.IValue;
 import value.VInt;
 
-abstract class ASTArithmetic implements ASTNode {
+public class ASTArithmetic implements ASTNode {
+  private ArithmeticOperation operation;
   private ASTNode left;
   private ASTNode right;
 
-  ASTArithmetic(ASTNode left, ASTNode right) {
+  public ASTArithmetic(ArithmeticOperation operation, ASTNode left, ASTNode right) {
+    this.operation = operation;
     this.left = left;
     this.right = right;
   }
 
-  ASTArithmetic(ASTNode node) {
-    this.left = node;
-    this.right = node;
-  }
-
-  protected IValue eval(ArithmeticOperation operation, Interpreter interpreter) throws InterpreterException {
+  @Override
+  public IValue eval(Interpreter interpreter) throws InterpreterException {
     IValue v1 = left.eval(interpreter);
     IValue v2 = right.eval(interpreter);
 
@@ -40,16 +40,17 @@ abstract class ASTArithmetic implements ASTNode {
         case MUL:
           return new VInt(i1 * i2);
         case DIV:
+          if (i2 == 0)
+            throw new DivideByZeroException();
           return new VInt(i1 / i2);
-        case NEG:
-          return new VInt(-i1);
       }
     }
 
     throw new IncompatibleTypesException(operation.name(), v1, v2);
   }
 
-  protected void compile(ArithmeticOperation operation, Compiler compiler) throws CompilerException {
+  @Override
+  public void compile(Compiler compiler) throws CompilerException {
     left.compile(compiler);
     right.compile(compiler);
 
@@ -66,9 +67,8 @@ abstract class ASTArithmetic implements ASTNode {
       case DIV:
         compiler.emit(ByteCode.DIV);
         break;
-      case NEG:
-        compiler.emit(ByteCode.NEG);
-        break;
+      default:
+        throw new UndefinedOperationException(operation);
     }
   }
 }

@@ -1,4 +1,4 @@
-package node.arithmetic;
+package node.variable;
 
 import compiler.Compiler;
 import env.Interpreter;
@@ -7,18 +7,24 @@ import errors.interpreter.InterpreterException;
 import node.ASTNode;
 import value.IValue;
 
-public final class ASTMul extends ASTArithmetic {
-  public ASTMul(ASTNode left, ASTNode right) {
-    super(left, right);
+public class ASTDeref implements ASTNode {
+  private String id;
+
+  public ASTDeref(String id) {
+    this.id = id;
   }
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpreterException {
-    return eval(ArithmeticOperation.MUL, interpreter);
+    return interpreter.find(id);
   }
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    compile(ArithmeticOperation.MUL, compiler);
+    compiler.loadStaticLink();
+
+    // TODO
+
+    compiler.addFieldToFrame(id);
   }
 }

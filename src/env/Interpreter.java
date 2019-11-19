@@ -1,8 +1,6 @@
 package env;
 
-import errors.interpreter.InterpreterException;
-import errors.interpreter.InvalidConstantValueException;
-import errors.interpreter.InvalidVariableValueException;
+import errors.interpreter.*;
 import value.IValue;
 import value.VBool;
 import value.VCell;
@@ -17,13 +15,16 @@ public class Interpreter {
   public Interpreter() {
     environment = new Environment();
     memory = new Memory();
+
+    // Begin main program scope
+    environment.beginScope();
   }
 
   public void beginEnvScope() {
     environment.beginScope();
   }
 
-  public void endEnvScope() {
+  public void endEnvScope() throws CellNotFoundInMemoryException {
     HashSet<VCell> cells = environment.currentScopeCells();
 
     for (VCell cell : cells) {
@@ -33,24 +34,41 @@ public class Interpreter {
     environment.endScope();
   }
 
-  public void newConst(String id, IValue value) throws InterpreterException {
-    if (!(value instanceof VInt || value instanceof VBool))
-      throw new InvalidConstantValueException(value);
-
-    environment.associate(id, value);
-  }
-
-  public void newVar(String id, IValue value) throws InterpreterException {
+  public void assignVar(String id, IValue value) throws InterpreterException {
     if (!(value instanceof VInt || value instanceof VBool))
       throw new InvalidVariableValueException(value);
 
     int memoryAddress = memory.addCell(value);
 
-    environment.associate(id, new VCell(memoryAddress));
+    environment.assign(id, new VCell(memoryAddress));
+  }
+
+  public void applyVar(String id, IValue value) throws InterpreterException {
+    IValue oldValue = environment.find(id);
+
+    if (oldValue instanceof VCell) {
+      int oldValueAddress = ((VCell) oldValue).getAddress();
+
+      memory.removeCellReference(oldValueAddress);
+    }
+
+    int memoryAddress;
+
+    if (value instanceof VCell) {
+      memoryAddress = ((VCell) value).getAddress();
+
+      memory.addCellReference(memoryAddress);
+    } else
+      memoryAddress = memory.addCell(value);
+
+    environment.assign(id, new VCell(memoryAddress));
   }
 
   public IValue find(String id) throws InterpreterException {
     IValue value = environment.find(id);
+
+    if (value == null)
+      throw new UndefinedVariableException(id);
 
     if (value instanceof VCell)
       value = memory.getCellValue(((VCell) value).getAddress());

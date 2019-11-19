@@ -27,13 +27,13 @@ public class Parser {
 
                 // PARSE
                 env = new Environment();
-                System.out.println("Result: " + exp.eval(env));
+                System.out.println("Result: " + exp.eval(env).toString());
                 System.out.println();
 
                 // COMPILE
-                compiler = new Compiler();
-                exp.compile(compiler);
-                compiler.end();
+                // compiler = new Compiler();
+                // exp.compile(compiler);
+                // compiler.end();
             } catch (Exception e) {
                 handleErrors(e, compiler, env);
                 parser.ReInit(System.in);
@@ -53,13 +53,7 @@ public class Parser {
             System.err.println(ce.getMessage());
         }
 
-        if (e instanceof CompilerException)
-            expected = true;
-
-        if (e instanceof EvaluationException || e instanceof  InterpreterException)
-            expected = true;
-
-        if (expected)
+        if (e instanceof CompilerException || e instanceof InterpreterException)
             System.err.println(e.getMessage());
         else
             e.printStackTrace();
@@ -92,8 +86,20 @@ TOKEN :
   | < IN : "in" >
   | < NEW : "new" >
   | < END : "end" >
-  //-------
 
+  // BLOCKS
+  | < WHILE : "while" >
+  | < IF : "if" >
+  | < THEN : "then" >
+  | < ELSE : "else" >
+
+  // Symbols
+  | < PROGRAM_END : ";;" >
+  | < STATEMENT_END : ";" >
+  | < DEREF : "!" >
+  | < APPLY : ":=" >
+
+  //-------
   | < Id: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"] )* >
 }
 
@@ -167,7 +173,7 @@ ASTNode Fact() :
 
 ASTNode Decl() :
 {
-  HashSet<node.block.ASTAssignVar> assignments;
+  HashSet<node.variable.ASTAssignVar> assignments;
   ASTNode n;
 }
 {

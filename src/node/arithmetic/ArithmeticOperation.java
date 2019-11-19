@@ -4,6 +4,5 @@ public enum ArithmeticOperation {
   ADD,
   SUB,
   MUL,
-  DIV,
-  NEG
+  DIV
 }

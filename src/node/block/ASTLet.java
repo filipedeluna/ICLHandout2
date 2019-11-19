@@ -1,4 +1,4 @@
-package node.logical;
+package node.block;
 
 import compiler.Compiler;
 import env.Interpreter;
@@ -7,18 +7,29 @@ import errors.interpreter.InterpreterException;
 import node.ASTNode;
 import value.IValue;
 
-public final class ASTOr extends ASTLogical {
-  public ASTOr(ASTNode left, ASTNode right) {
-    super(left, right);
+public class ASTLet implements ASTNode {
+  private ASTNode node;
+
+  public ASTLet(ASTNode node) {
+    this.node = node;
   }
 
-  @Override
   public IValue eval(Interpreter interpreter) throws InterpreterException {
-    return eval(LogicalOperation.OR, interpreter);
+    interpreter.beginEnvScope();
+
+    IValue val = node.eval(interpreter);
+
+    interpreter.endEnvScope();
+
+    return val;
   }
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    compile(LogicalOperation.OR, compiler);
+    compiler.beginFrame();
+
+    node.compile(compiler);
+
+    compiler.endFrame();
   }
 }
