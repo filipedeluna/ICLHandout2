@@ -34,16 +34,16 @@ public class Interpreter {
     environment.endScope();
   }
 
-  public void assignVar(String id, IValue value) throws InterpreterException {
-    if (!(value instanceof VInt || value instanceof VBool))
-      throw new InvalidVariableValueException(value);
+  public void assignCell(String id, IValue value) throws InterpreterException {
+    if (!(value instanceof VCell))
+      throw new UnexpectedTypeException(value.typeToString(), "cell");
 
-    int memoryAddress = memory.addCell(value);
+    memory.addCellReference(((VCell) value).getAddress());
 
-    environment.assign(id, new VCell(memoryAddress));
+    environment.assign(id, value);
   }
 
-  public void applyVar(String id, IValue value) throws InterpreterException {
+  public void applyValue(String id, IValue value) throws InterpreterException {
     IValue oldValue = environment.find(id);
 
     if (oldValue instanceof VCell) {
@@ -74,5 +74,26 @@ public class Interpreter {
       value = memory.getCellValue(((VCell) value).getAddress());
 
     return value;
+  }
+
+  public VCell initCell(IValue value) throws InterpreterException {
+    if (value instanceof VCell)
+      memory.addCellReference(((VCell) value).getAddress());
+
+    int address = memory.addCell(value);
+
+    return new VCell(address);
+  }
+
+  public VCell getVarReference(String id) throws InterpreterException {
+    IValue value = environment.find(id);
+
+    if (value == null)
+      throw new UndefinedVariableException(id);
+
+    if (!(value instanceof VCell))
+      throw new UnexpectedTypeException(value.typeToString(), "cell");
+
+    return (VCell) value;
   }
 }

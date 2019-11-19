@@ -1,4 +1,4 @@
-package node.types;
+package node.block;
 
 import compiler.Compiler;
 import env.Interpreter;
@@ -7,20 +7,24 @@ import errors.interpreter.InterpreterException;
 import node.ASTNode;
 import value.IValue;
 
-public final class ASTVar implements ASTNode {
-  private String id;
+public class ASTSeq implements ASTNode {
+  private ASTNode statement;
+  private ASTNode node;
 
-  public ASTVar(String id) {
-    this.id = id;
+  public ASTSeq(ASTNode statement, ASTNode node) {
+    this.statement = statement;
+    this.node = node;
   }
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpreterException {
-    return interpreter.getVarReference(id);
+    statement.eval(interpreter);
+
+    return node.eval(interpreter);
   }
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    compiler.getFieldFromFrame(id);
+
   }
 }

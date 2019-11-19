@@ -7,12 +7,10 @@ import errors.interpreter.InterpreterException;
 import node.ASTNode;
 import value.IValue;
 
-public class ASTAssign implements ASTNode {
-  private String id;
+public class ASTInit implements ASTNode {
   private ASTNode value;
 
-  public ASTAssign(String id, ASTNode value) {
-    this.id = id;
+  public ASTInit(ASTNode value) {
     this.value = value;
   }
 
@@ -20,17 +18,13 @@ public class ASTAssign implements ASTNode {
   public IValue eval(Interpreter interpreter) throws InterpreterException {
     IValue iv = value.eval(interpreter);
 
-    interpreter.assignCell(id, iv);
-
-    return null;
+    return interpreter.initCell(iv);
   }
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
     compiler.loadStaticLink();
-
+    // TODO
     value.compile(compiler);
-
-    compiler.addFieldToFrame(id);
   }
 }

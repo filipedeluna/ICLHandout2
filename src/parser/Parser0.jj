@@ -80,6 +80,9 @@ TOKEN :
   | < RPAR : ")" >
   | < EL: "\n" >
 
+  // Boolean
+  | < BOOL : "true" | "false" >
+
   // Decl
   | < EQ : "=" >
   | < LET : "let" >
@@ -87,17 +90,33 @@ TOKEN :
   | < NEW : "new" >
   | < END : "end" >
 
-  // BLOCKS
+  // Blocks
   | < WHILE : "while" >
+  | < DO : "do" >
   | < IF : "if" >
   | < THEN : "then" >
   | < ELSE : "else" >
 
   // Symbols
   | < PROGRAM_END : ";;" >
-  | < STATEMENT_END : ";" >
+  | < SEQ_END : ";" >
   | < DEREF : "!" >
   | < APPLY : ":=" >
+
+  // Relational
+  | < EQEQ : "==" >
+  | < DIFFERS : "<>" >
+  | < GREATER : ">" >
+  | < LOWER : "<" >
+  | < GREATER_EQ : ">=" >
+  | < LOWER_EQ : "<=" >
+  | < REL : <EQEQ> | <DIFFERS> | <GREATER> | <LOWER> | <GREATER_EQ> | <LOWER_EQ> >
+
+  // Logical
+  | < AND : "&&" >
+  | < OR : "||" >
+  | < COMP : "~" >
+  | < LOG : <AND> | <OR> | <COMP> >
 
   //-------
   | < Id: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"] )* >
@@ -108,21 +127,24 @@ ASTNode Start():
   ASTNode n;
 }
 {
-   n = Exp() <EL>
+   n = Exp() <PROGRAM_END>
    { return n; }
 }
 
 ASTNode Exp() :
 {
-  parser.Token op;
+  Token op;
   ASTNode n1, n2;
 }
 {
-    n1 = Term()
+
     (
+        n1 = Term()
+
         ( op = <PLUS> | op = <MINUS> )
 
         n2 = Term()
+
         {
           if (op.kind == PLUS)
               n1 = new ASTPlus(n1, n2);
@@ -130,17 +152,54 @@ ASTNode Exp() :
               n1 = new ASTSub(n1, n2);
         }
     ) *
+    |
+    (
+        n1 = Seq()
+
+        ( op = <REL> | op = <LOG> )
+
+        n2 = Seq()
+
+        {
+            switch(op.kind) {
+                case EQEQ:
+                    n1 = new ASTRelational(RelationalOperation.EQUALS , n1, n2);
+                    break;
+                case DIFFERS:
+                    n1 = new ASTRelational(RelationalOperation.DIFFERS , n1, n2);
+                    break;
+                case GREATER:
+                    n1 = new ASTRelational(RelationalOperation.GREATER_THAN , n1, n2);
+                    break;
+                case LOWER:
+                    n1 = new ASTRelational(RelationalOperation.LOWER_THAN , n1, n2);
+                    break;
+                case GREATER_EQ:
+                    n1 = new ASTRelational(RelationalOperation.GREATER_OR_EQUALS , n1, n2);
+                    break;
+                case LOWER_EQ:
+                    n1 = new ASTRelational(RelationalOperation.LOWER_OR_EQUALS , n1, n2);
+                    break;
+                case AND:
+                    n1 = new ASTLogical(LogicalOperation.AND, n1, n2);
+                    break;
+                case OR:
+                    n1 = new ASTLogical(LogicalOperation.OR, n1, n2);
+                    break;
+            }
+        }
+    ) *
+
     { return n1; }
 }
 
 ASTNode Term() :
 {
     Token op;
-    ASTNode n1;
-    ASTNode n2;
+    ASTNode n1, n2;
 }
 {
-  n1 = Fact()
+  n1 = Seq()
   (
     ( op = <TIMES> | op = <DIV> )
 
@@ -155,47 +214,54 @@ ASTNode Term() :
   { return n1; }
 }
 
+ASTNode Seq() :
+{
+    ASTNode n1, n2;
+}
+{
+    n1 = Fact() <SEQ_END> n2 = Exp() { n1 = new ASTSeq(n1, n2); }
+    | n1 = Fact()
+
+    { return n1; }
+}
+
 ASTNode Fact() :
 {
     Token t;
-    ASTNode n;
+    ASTNode n1, n2, n3;
 }
 {
     (
-        t = <Num> { n = new ASTNum(Integer.parseInt(t.image)); }
-        | <MINUS> n = Exp() { n = new ASTNeg(n); }
-        | <LPAR> n = Exp() <RPAR>
-        | <LET> n = Decl() <END>
-        | t = <Id> { n = new ASTId(t.image); }
+        n1 = <NEW> (t = <Num> | <BOOL> ) { n1 = new ASTInit(t.image); }
+        | <DEREF> t = <Id> { n1 = new ASTDeref(t.image); }
+        | t = <Num> { n1 = new ASTNum(Integer.parseInt(t.image)); }
+        | t = <BOOL> { n1 = new ASTBool(Boolean.parseBoolean(t.image)); }
+        | <MINUS> n1 = Exp() { n1 = new ASTNeg(n1); }
+        | <COMP> n1 = Exp() { n1 = new ASTComp(n1); }
+        | <LPAR> n1 = Exp() <RPAR>
+        | <LET> n1 = Decl() <END>
+        | <WHILE> n1 = Exp() <DO> n2 = Exp() <END> { n1 = new ASTWhile(n1, n2); }
+        | <IF> n1 = Exp() <THEN> n2 = Exp() <ELSE> n3 = Exp() <END> { n1 = new ASTIf(n1, n2, n3); }
+        | t = <Id> { n1 = new ASTVar(t.image); }
     )
-    { return n; }
+    { return n1; }
 }
 
 ASTNode Decl() :
 {
-  HashSet<node.variable.ASTAssignVar> assignments;
+  HashSet<ASTAssign> assignments;
   ASTNode n;
 }
 {
-    assignments = Assign() <IN> n = Exp()
-
-    { return new ASTBlock(assignments, n); }
-}
-
-HashSet Assign():
-{
-    Token t;
-    ASTNode n;
-    HashSet<ASTAssign> assignments;
-}
-{
     { assignments = new HashSet<ASTAssign>(); }
+
     (
         t = <Id> <EQ> n = Exp()
         {
-            assignments.add(new ASTAssign(t.image, n));
+          assignments.add(new ASTAssign(t.image, n));
         }
     ) *
+    <IN> n = Exp()
 
-    { return assignments; }
+    { return new ASTBlock(assignments, n); }
 }

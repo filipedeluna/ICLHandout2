@@ -20,7 +20,7 @@ public class ASTApply implements ASTNode {
   public IValue eval(Interpreter interpreter) throws InterpreterException {
     IValue iv = value.eval(interpreter);
 
-    interpreter.applyVar(id, iv);
+    interpreter.applyValue(id, iv);
 
     return null;
   }

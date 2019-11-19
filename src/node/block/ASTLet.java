@@ -5,17 +5,26 @@ import env.Interpreter;
 import errors.compiler.CompilerException;
 import errors.interpreter.InterpreterException;
 import node.ASTNode;
+import node.variable.ASTAssign;
 import value.IValue;
 
+import java.util.HashSet;
+
 public class ASTLet implements ASTNode {
+  private HashSet<ASTAssign> assignments;
   private ASTNode node;
 
-  public ASTLet(ASTNode node) {
+  public ASTLet(ASTNode node, HashSet<ASTAssign> assignments) {
     this.node = node;
+    this.assignments = assignments;
   }
 
   public IValue eval(Interpreter interpreter) throws InterpreterException {
     interpreter.beginEnvScope();
+
+    for (ASTAssign assignment : assignments) {
+      assignment.eval(interpreter);
+    }
 
     IValue val = node.eval(interpreter);
 
