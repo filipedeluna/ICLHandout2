@@ -1,10 +1,8 @@
-package env;
+package interpreter;
 
 import errors.interpreter.*;
 import value.IValue;
-import value.VBool;
 import value.VCell;
-import value.VInt;
 
 import java.util.HashSet;
 

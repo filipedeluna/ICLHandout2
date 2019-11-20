@@ -1,4 +1,4 @@
-package env;
+package interpreter;
 
 import errors.interpreter.InterpreterException;
 import errors.interpreter.OutsideOfScopeException;

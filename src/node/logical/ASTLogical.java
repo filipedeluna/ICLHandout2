@@ -2,12 +2,11 @@ package node.logical;
 
 import compiler.ByteCode;
 import compiler.Compiler;
-import env.Interpreter;
+import interpreter.Interpreter;
 import errors.compiler.CompilerException;
 import errors.compiler.UndefinedOperationException;
 import errors.interpreter.InterpreterException;
 import errors.interpreter.IncompatibleTypesException;
-import errors.interpreter.InvalidOperationArgumentsException;
 import node.ASTNode;
 import value.IValue;
 import value.VBool;

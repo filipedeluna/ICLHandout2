@@ -1,7 +1,7 @@
 package node.relational;
 
 import compiler.Compiler;
-import env.Interpreter;
+import interpreter.Interpreter;
 import errors.compiler.CompilerException;
 import errors.compiler.UndefinedOperationException;
 import errors.interpreter.InterpreterException;

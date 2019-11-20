@@ -2,7 +2,7 @@ package node.arithmetic;
 
 import compiler.ByteCode;
 import compiler.Compiler;
-import env.Interpreter;
+import interpreter.Interpreter;
 import errors.compiler.CompilerException;
 import errors.interpreter.IncompatibleTypeException;
 import errors.interpreter.InterpreterException;

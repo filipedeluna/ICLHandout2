@@ -1,4 +1,4 @@
-package env;
+package interpreter;
 
 import errors.interpreter.MemoryCorruptionException;
 import errors.interpreter.CellNotFoundInMemoryException;

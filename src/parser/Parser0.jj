@@ -3,13 +3,21 @@ package parser;
 
 import errors.interpreter.*;
 import errors.compiler.*;
-import errors.eval.*;
 
 import node.*;
+import node.arithmetic.*;
+import node.logical.*;
+import node.relational.*;
+import node.variable.*;
+import node.types.*;
+import node.block.*;
 
-import env.*;
+import value.*;
 
 import compiler.Compiler;
+import interpreter.Interpreter;
+
+import java.util.HashSet;
 
 /** ID lister. */
 public class Parser {
@@ -19,23 +27,28 @@ public class Parser {
 
         ASTNode exp;
         Compiler compiler = null;
-        Environment env = null;
+        Interpreter interpreter;
 
         while (true) {
             try {
                 exp = parser.Start();
 
                 // PARSE
-                env = new Environment();
-                System.out.println("Result: " + exp.eval(env).toString());
+                interpreter = new Interpreter();
+
+                if (exp != null)
+                    System.out.println("Result: " + exp.eval(interpreter));
+                else
+                    System.out.println("Result: null");
+
                 System.out.println();
 
                 // COMPILE
-                // compiler = new Compiler();
+                compiler = new Compiler();
                 // exp.compile(compiler);
                 // compiler.end();
             } catch (Exception e) {
-                handleErrors(e, compiler, env);
+                handleErrors(e, compiler);
                 parser.ReInit(System.in);
             }
         }
@@ -44,10 +57,9 @@ public class Parser {
     /*
         UTILS
     */
-    private static void handleErrors(Exception e, Compiler compiler, Environment env) {
-        boolean expected = false;
-
+    private static void handleErrors(Exception e, Compiler compiler) {
         try {
+          if (compiler != null)
             compiler.deleteGeneratedFiles();
         } catch (CompilerException ce) {
             System.err.println(ce.getMessage());
@@ -67,18 +79,18 @@ SKIP :
   " "
 | "\t"
 | "\r"
+| "\n"
 }
 
 TOKEN :
 {
   < Num: (["0"-"9"]) + >
-  | < PLUS : "+" >
-  | < MINUS : "-">
-  | < TIMES : "*">
+  | < ADD : "+" >
+  | < SUB : "-">
+  | < MUL : "*">
   | < DIV : "/">
   | < LPAR : "(" >
   | < RPAR : ")" >
-  | < EL: "\n" >
 
   // Boolean
   | < BOOL : "true" | "false" >
@@ -110,13 +122,11 @@ TOKEN :
   | < LOWER : "<" >
   | < GREATER_EQ : ">=" >
   | < LOWER_EQ : "<=" >
-  | < REL : <EQEQ> | <DIFFERS> | <GREATER> | <LOWER> | <GREATER_EQ> | <LOWER_EQ> >
 
   // Logical
   | < AND : "&&" >
   | < OR : "||" >
   | < COMP : "~" >
-  | < LOG : <AND> | <OR> | <COMP> >
 
   //-------
   | < Id: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"] )* >
@@ -124,11 +134,61 @@ TOKEN :
 
 ASTNode Start():
 {
-  ASTNode n;
+  ASTNode n = null;
 }
 {
-   n = Exp() <PROGRAM_END>
+   ( n = Seq() ) ? <PROGRAM_END>
    { return n; }
+}
+
+ASTNode Seq() :
+{
+    ASTNode n1, n2;
+}
+{
+    n1 = Log() ( <SEQ_END> n2 = Seq() { n1 = new ASTSeq(n1, n2); } ) ?
+
+    { return n1; }
+}
+
+ASTNode Log() :
+{
+  Token op;
+  ASTNode n1, n2;
+}
+{
+    n1 = Exp()
+
+    (
+        (
+             op = <EQEQ> | op = <DIFFERS> | op = <GREATER> | op = <LOWER>
+             | op = <GREATER_EQ> | op = <LOWER_EQ>
+             | op = <AND> | op = <OR>
+        )
+
+        n2 = Log()
+
+        {
+            if (op.kind == EQEQ)
+                n1 = new ASTRelational(RelationalOperation.EQUALS , n1, n2);
+            if (op.kind == DIFFERS)
+                n1 = new ASTRelational(RelationalOperation.DIFFERS , n1, n2);
+            if (op.kind == GREATER)
+                n1 = new ASTRelational(RelationalOperation.GREATER_THAN , n1, n2);
+            if (op.kind == LOWER)
+                n1 = new ASTRelational(RelationalOperation.LOWER_THAN , n1, n2);
+            if (op.kind == GREATER_EQ)
+                n1 = new ASTRelational(RelationalOperation.GREATER_OR_EQUALS , n1, n2);
+            if (op.kind == LOWER_EQ)
+                n1 = new ASTRelational(RelationalOperation.LOWER_OR_EQUALS , n1, n2);
+            if (op.kind == AND)
+                n1 = new ASTLogical(LogicalOperation.AND, n1, n2);
+            if (op.kind == OR)
+                n1 = new ASTLogical(LogicalOperation.OR, n1, n2);
+        }
+    ) *
+
+    { return n1; }
 }
 
 ASTNode Exp() :
@@ -137,56 +197,18 @@ ASTNode Exp() :
   ASTNode n1, n2;
 }
 {
+    n1 = Term()
 
     (
-        n1 = Term()
-
-        ( op = <PLUS> | op = <MINUS> )
+        ( op = <ADD> | op = <SUB> )
 
         n2 = Term()
 
         {
-          if (op.kind == PLUS)
-              n1 = new ASTPlus(n1, n2);
-          else
-              n1 = new ASTSub(n1, n2);
-        }
-    ) *
-    |
-    (
-        n1 = Seq()
-
-        ( op = <REL> | op = <LOG> )
-
-        n2 = Seq()
-
-        {
-            switch(op.kind) {
-                case EQEQ:
-                    n1 = new ASTRelational(RelationalOperation.EQUALS , n1, n2);
-                    break;
-                case DIFFERS:
-                    n1 = new ASTRelational(RelationalOperation.DIFFERS , n1, n2);
-                    break;
-                case GREATER:
-                    n1 = new ASTRelational(RelationalOperation.GREATER_THAN , n1, n2);
-                    break;
-                case LOWER:
-                    n1 = new ASTRelational(RelationalOperation.LOWER_THAN , n1, n2);
-                    break;
-                case GREATER_EQ:
-                    n1 = new ASTRelational(RelationalOperation.GREATER_OR_EQUALS , n1, n2);
-                    break;
-                case LOWER_EQ:
-                    n1 = new ASTRelational(RelationalOperation.LOWER_OR_EQUALS , n1, n2);
-                    break;
-                case AND:
-                    n1 = new ASTLogical(LogicalOperation.AND, n1, n2);
-                    break;
-                case OR:
-                    n1 = new ASTLogical(LogicalOperation.OR, n1, n2);
-                    break;
-            }
+            if (op.kind == ADD)
+                n1 = new ASTArithmetic(ArithmeticOperation.ADD, n1, n2);
+            if (op.kind == SUB)
+                n1 = new ASTArithmetic(ArithmeticOperation.SUB, n1, n2);
         }
     ) *
 
@@ -199,30 +221,19 @@ ASTNode Term() :
     ASTNode n1, n2;
 }
 {
-  n1 = Seq()
+  n1 = Fact()
   (
-    ( op = <TIMES> | op = <DIV> )
+    ( op = <MUL> | op = <DIV> )
 
     n2 = Term()
     {
-        if (op.kind == TIMES)
-          n1 = new ASTTimes(n1, n2);
+        if (op.kind == MUL)
+          n1 = new ASTArithmetic(ArithmeticOperation.MUL, n1, n2);
         else
-          n1 = new ASTDiv(n1, n2);
+          n1 = new ASTArithmetic(ArithmeticOperation.DIV, n1, n2);
     }
   ) ?
   { return n1; }
-}
-
-ASTNode Seq() :
-{
-    ASTNode n1, n2;
-}
-{
-    n1 = Fact() <SEQ_END> n2 = Exp() { n1 = new ASTSeq(n1, n2); }
-    | n1 = Fact()
-
-    { return n1; }
 }
 
 ASTNode Fact() :
@@ -232,11 +243,14 @@ ASTNode Fact() :
 }
 {
     (
-        n1 = <NEW> (t = <Num> | <BOOL> ) { n1 = new ASTInit(t.image); }
+        <NEW> (
+            t = <Num> { n1 = new ASTInit(new VInt(Integer.parseInt(t.image))); }
+            | t = <BOOL> { n1 = new ASTInit(new VBool(Boolean.parseBoolean(t.image))); }
+        )
         | <DEREF> t = <Id> { n1 = new ASTDeref(t.image); }
-        | t = <Num> { n1 = new ASTNum(Integer.parseInt(t.image)); }
-        | t = <BOOL> { n1 = new ASTBool(Boolean.parseBoolean(t.image)); }
-        | <MINUS> n1 = Exp() { n1 = new ASTNeg(n1); }
+        | t = <Num> { n1 = new ASTNum(new VInt(Integer.parseInt(t.image))); }
+        | t = <BOOL> { n1 = new ASTBool(new VBool(Boolean.parseBoolean(t.image))); }
+        | <SUB> n1 = Exp() { n1 = new ASTNeg(n1); }
         | <COMP> n1 = Exp() { n1 = new ASTComp(n1); }
         | <LPAR> n1 = Exp() <RPAR>
         | <LET> n1 = Decl() <END>
@@ -251,6 +265,7 @@ ASTNode Decl() :
 {
   HashSet<ASTAssign> assignments;
   ASTNode n;
+  Token t;
 }
 {
     { assignments = new HashSet<ASTAssign>(); }
@@ -263,5 +278,5 @@ ASTNode Decl() :
     ) *
     <IN> n = Exp()
 
-    { return new ASTBlock(assignments, n); }
+    { return new ASTLet(n, assignments); }
 }

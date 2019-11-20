@@ -1,7 +1,7 @@
 package node.block;
 
 import compiler.Compiler;
-import env.Interpreter;
+import interpreter.Interpreter;
 import errors.compiler.CompilerException;
 import errors.interpreter.InterpreterException;
 import errors.interpreter.UnexpectedTypeException;

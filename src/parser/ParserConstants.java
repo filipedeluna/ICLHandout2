@@ -11,33 +11,69 @@ public interface ParserConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int Num = 4;
+  int Num = 5;
   /** RegularExpression Id. */
-  int PLUS = 5;
+  int ADD = 6;
   /** RegularExpression Id. */
-  int MINUS = 6;
+  int SUB = 7;
   /** RegularExpression Id. */
-  int TIMES = 7;
+  int MUL = 8;
   /** RegularExpression Id. */
-  int DIV = 8;
+  int DIV = 9;
   /** RegularExpression Id. */
-  int LPAR = 9;
+  int LPAR = 10;
   /** RegularExpression Id. */
-  int RPAR = 10;
+  int RPAR = 11;
   /** RegularExpression Id. */
-  int EL = 11;
+  int BOOL = 12;
   /** RegularExpression Id. */
-  int EQ = 12;
+  int EQ = 13;
   /** RegularExpression Id. */
-  int LET = 13;
+  int LET = 14;
   /** RegularExpression Id. */
-  int IN = 14;
+  int IN = 15;
   /** RegularExpression Id. */
-  int NEW = 15;
+  int NEW = 16;
   /** RegularExpression Id. */
-  int END = 16;
+  int END = 17;
   /** RegularExpression Id. */
-  int Id = 17;
+  int WHILE = 18;
+  /** RegularExpression Id. */
+  int DO = 19;
+  /** RegularExpression Id. */
+  int IF = 20;
+  /** RegularExpression Id. */
+  int THEN = 21;
+  /** RegularExpression Id. */
+  int ELSE = 22;
+  /** RegularExpression Id. */
+  int PROGRAM_END = 23;
+  /** RegularExpression Id. */
+  int SEQ_END = 24;
+  /** RegularExpression Id. */
+  int DEREF = 25;
+  /** RegularExpression Id. */
+  int APPLY = 26;
+  /** RegularExpression Id. */
+  int EQEQ = 27;
+  /** RegularExpression Id. */
+  int DIFFERS = 28;
+  /** RegularExpression Id. */
+  int GREATER = 29;
+  /** RegularExpression Id. */
+  int LOWER = 30;
+  /** RegularExpression Id. */
+  int GREATER_EQ = 31;
+  /** RegularExpression Id. */
+  int LOWER_EQ = 32;
+  /** RegularExpression Id. */
+  int AND = 33;
+  /** RegularExpression Id. */
+  int OR = 34;
+  /** RegularExpression Id. */
+  int COMP = 35;
+  /** RegularExpression Id. */
+  int Id = 36;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -48,6 +84,7 @@ public interface ParserConstants {
     "\" \"",
     "\"\\t\"",
     "\"\\r\"",
+    "\"\\n\"",
     "<Num>",
     "\"+\"",
     "\"-\"",
@@ -55,12 +92,30 @@ public interface ParserConstants {
     "\"/\"",
     "\"(\"",
     "\")\"",
-    "\"\\n\"",
+    "<BOOL>",
     "\"=\"",
     "\"let\"",
     "\"in\"",
     "\"new\"",
     "\"end\"",
+    "\"while\"",
+    "\"do\"",
+    "\"if\"",
+    "\"then\"",
+    "\"else\"",
+    "\";;\"",
+    "\";\"",
+    "\"!\"",
+    "\":=\"",
+    "\"==\"",
+    "\"<>\"",
+    "\">\"",
+    "\"<\"",
+    "\">=\"",
+    "\"<=\"",
+    "\"&&\"",
+    "\"||\"",
+    "\"~\"",
     "<Id>",
   };
 
