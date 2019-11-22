@@ -16,7 +16,7 @@ public class ASTDeref implements ASTNode {
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpreterException {
-    return interpreter.find(id);
+    return interpreter.deref(id);
   }
 
   @Override

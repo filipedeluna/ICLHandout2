@@ -16,7 +16,7 @@ public final class ASTVar implements ASTNode {
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpreterException {
-    return interpreter.getVarReference(id);
+    return interpreter.find(id);
   }
 
   @Override

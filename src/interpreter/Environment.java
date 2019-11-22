@@ -3,7 +3,6 @@ package interpreter;
 import errors.interpreter.InterpreterException;
 import errors.interpreter.OutsideOfScopeException;
 import errors.interpreter.VariableAlreadyDefinedException;
-import value.IValue;
 import value.VCell;
 
 import java.util.ArrayDeque;
@@ -12,7 +11,7 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 
 final class Environment {
-  private ArrayDeque<HashMap<String, IValue>> scopes;
+  private ArrayDeque<HashMap<String, VCell>> scopes;
 
   Environment() {
     this.scopes = new ArrayDeque<>();
@@ -22,24 +21,24 @@ final class Environment {
     scopes.push(new HashMap<>());
   }
 
-  public void endScope() {
+  void endScope() {
     scopes.pop();
   }
 
-  void assign(String id, IValue value) throws InterpreterException {
+  void assign(String id, VCell cell) throws InterpreterException {
     if (scopes.size() == 0 || scopes.peek() == null)
       throw new OutsideOfScopeException(id);
 
-    HashMap<String, IValue> scope = scopes.peek();
+    HashMap<String, VCell> scope = scopes.peek();
 
     if (scope.get(id) != null)
       throw new VariableAlreadyDefinedException(id);
 
-    scope.put(id, value);
+    scope.put(id, cell);
   }
 
-  IValue find(String id) {
-    for (HashMap<String, IValue> scope : scopes) {
+  VCell find(String id) {
+    for (HashMap<String, VCell> scope : scopes) {
       if (scope.get(id) != null)
         return scope.get(id);
     }
@@ -53,9 +52,8 @@ final class Environment {
     HashSet<VCell> scopeCells = new HashSet<>();
 
     if (scopes.peek() != null)
-      for (Entry<String, IValue> entry : scopes.peek().entrySet()) {
-        if (entry.getValue() instanceof VCell)
-          scopeCells.add((VCell) entry.getValue());
+      for (Entry<String, VCell> entry : scopes.peek().entrySet()) {
+          scopeCells.add(entry.getValue());
       }
 
     return scopeCells;

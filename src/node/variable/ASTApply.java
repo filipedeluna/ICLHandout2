@@ -8,19 +8,20 @@ import node.ASTNode;
 import value.IValue;
 
 public class ASTApply implements ASTNode {
-  private String id;
+  private ASTNode ref;
   private ASTNode value;
 
-  public ASTApply(String id, ASTNode value) {
-    this.id = id;
+  public ASTApply(ASTNode ref, ASTNode value) {
+    this.ref = ref;
     this.value = value;
   }
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpreterException {
-    IValue iv = value.eval(interpreter);
+    IValue iref = ref.eval(interpreter);
+    IValue ival = value.eval(interpreter);
 
-    interpreter.applyValue(id, iv);
+    interpreter.apply(iref, ival);
 
     return null;
   }
@@ -31,6 +32,6 @@ public class ASTApply implements ASTNode {
 
     value.compile(compiler);
 
-    compiler.addFieldToFrame(id);
+    // compiler.addFieldToFrame(id);
   }
 }

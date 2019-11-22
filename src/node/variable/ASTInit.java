@@ -16,7 +16,7 @@ public class ASTInit implements ASTNode {
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpreterException {
-    return interpreter.initCell(value);
+    return interpreter.init(value);
   }
 
   @Override

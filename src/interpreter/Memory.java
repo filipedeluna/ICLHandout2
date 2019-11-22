@@ -19,13 +19,43 @@ class Memory {
   int addCell(IValue value) throws CellNotFoundInMemoryException {
     if (value instanceof VCell) {
       int cellRefAddress = ((VCell) value).getAddress();
-
       addCellReference(cellRefAddress);
     }
 
     memory.put(addressCounter, new MemoryCell(value));
 
     return addressCounter++;
+  }
+
+  // Recursively obtain memory value because cells can point to other cells
+  IValue getCellValue(int address) throws CellNotFoundInMemoryException, MemoryCorruptionException {
+    MemoryCell cell = getCell(address);
+
+    IValue value = cell.getValue();
+
+    if (value == null)
+      throw new MemoryCorruptionException();
+
+    if (value instanceof VCell)
+      value = getCellValue(((VCell) value).getAddress());
+
+    return value;
+  }
+
+  void changeCellValue(int address, IValue value) throws CellNotFoundInMemoryException {
+    MemoryCell oldCell = getCell(address);
+
+    memory.remove(address);
+
+    if (oldCell.getValue() instanceof VCell) {
+      int oldCellValueAddress = ((VCell) oldCell.getValue()).getAddress();
+      removeCellReference(oldCellValueAddress);
+    }
+
+    memory.put(address, new MemoryCell(value));
+
+    if (value instanceof VCell)
+      addCellReference(((VCell) value).getAddress());
   }
 
   void addCellReference(int address) throws CellNotFoundInMemoryException {
@@ -45,38 +75,6 @@ class Memory {
       memory.remove(address);
     else
       memory.put(address, new MemoryCell(oldCell));
-  }
-
-  // Recursively obtain memory value because cells can point to other cells
-  IValue getCellValue(int address) throws CellNotFoundInMemoryException, MemoryCorruptionException {
-    MemoryCell cell = getCell(address);
-
-    IValue value = cell.getValue();
-
-    if (value == null)
-      throw new MemoryCorruptionException();
-
-    if (value instanceof VCell)
-      value = getCellValue(((VCell) value).getAddress());
-
-    return value;
-  }
-
-  void changeCellValue(int address, IValue value) throws CellNotFoundInMemoryException, MemoryCorruptionException {
-    MemoryCell oldCell = getCell(address);
-
-    memory.remove(address);
-
-    if (oldCell.getValue() instanceof VCell) {
-      int oldCellValueAddress = ((VCell) oldCell.getValue()).getAddress();
-
-      removeCellReference(oldCellValueAddress);
-    }
-
-    memory.put(address, new MemoryCell(value));
-
-    if (value instanceof VCell)
-      addCellReference(((VCell) value).getAddress());
   }
 
   /*

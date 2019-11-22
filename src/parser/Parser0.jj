@@ -161,12 +161,13 @@ ASTNode Log() :
 
     (
         (
-             op = <EQEQ> | op = <DIFFERS> | op = <GREATER> | op = <LOWER>
+             op = <EQEQ> | op = <DIFFERS>
+             | op = <GREATER> | op = <LOWER>
              | op = <GREATER_EQ> | op = <LOWER_EQ>
              | op = <AND> | op = <OR>
         )
 
-        n2 = Log()
+        n2 = Exp()
 
         {
             if (op.kind == EQEQ)
@@ -222,6 +223,7 @@ ASTNode Term() :
 }
 {
   n1 = Fact()
+
   (
     ( op = <MUL> | op = <DIV> )
 
@@ -229,7 +231,7 @@ ASTNode Term() :
     {
         if (op.kind == MUL)
           n1 = new ASTArithmetic(ArithmeticOperation.MUL, n1, n2);
-        else
+        if (op.kind == DIV)
           n1 = new ASTArithmetic(ArithmeticOperation.DIV, n1, n2);
     }
   ) ?
@@ -243,20 +245,30 @@ ASTNode Fact() :
 }
 {
     (
-        <NEW> (
-            t = <Num> { n1 = new ASTInit(new VInt(Integer.parseInt(t.image))); }
-            | t = <BOOL> { n1 = new ASTInit(new VBool(Boolean.parseBoolean(t.image))); }
-        )
+        n1 = Init()
         | <DEREF> t = <Id> { n1 = new ASTDeref(t.image); }
-        | t = <Num> { n1 = new ASTNum(new VInt(Integer.parseInt(t.image))); }
-        | t = <BOOL> { n1 = new ASTBool(new VBool(Boolean.parseBoolean(t.image))); }
-        | <SUB> n1 = Exp() { n1 = new ASTNeg(n1); }
-        | <COMP> n1 = Exp() { n1 = new ASTComp(n1); }
-        | <LPAR> n1 = Exp() <RPAR>
+        | <SUB> n1 = Log() { n1 = new ASTNeg(n1); }
+        | <COMP> n1 = Log() { n1 = new ASTComp(n1); }
+        | <LPAR> n1 = Log() <RPAR> ( <APPLY> n2 = Log() { n1 = new ASTApply(n1, n2); } ) ?
         | <LET> n1 = Decl() <END>
-        | <WHILE> n1 = Exp() <DO> n2 = Exp() <END> { n1 = new ASTWhile(n1, n2); }
-        | <IF> n1 = Exp() <THEN> n2 = Exp() <ELSE> n3 = Exp() <END> { n1 = new ASTIf(n1, n2, n3); }
-        | t = <Id> { n1 = new ASTVar(t.image); }
+        | <WHILE> n1 = Log() <DO> n2 = Seq() <END> { n1 = new ASTWhile(n1, n2); }
+        | <IF> n1 = Log() <THEN> n2 = Seq() <ELSE> n3 = Seq() <END> { n1 = new ASTIf(n1, n2, n3); }
+        | n1 = Val()
+    )
+
+    { return n1; }
+}
+
+ASTNode Val() :
+{
+    Token t;
+    ASTNode n1, n2;
+}
+{
+    (
+        t = <Num> { n1 = new ASTNum(new VInt(Integer.parseInt(t.image))); }
+        | t = <BOOL> { n1 = new ASTBool(new VBool(Boolean.parseBoolean(t.image))); }
+        | t = <Id>  { n1 = new ASTVar(t.image); } ( <APPLY> n2 = Log() { n1 = new ASTApply(n1, n2); } ) ?
     )
     { return n1; }
 }
@@ -264,19 +276,33 @@ ASTNode Fact() :
 ASTNode Decl() :
 {
   HashSet<ASTAssign> assignments;
-  ASTNode n;
   Token t;
+  ASTNode n;
 }
 {
     { assignments = new HashSet<ASTAssign>(); }
 
     (
-        t = <Id> <EQ> n = Exp()
+        t = <Id> <EQ> n = Init()
         {
           assignments.add(new ASTAssign(t.image, n));
         }
     ) *
-    <IN> n = Exp()
+    <IN> n = Seq()
 
     { return new ASTLet(n, assignments); }
+}
+
+ASTNode Init() :
+{
+    Token t;
+    ASTNode n;
+}
+{
+    <NEW> (
+        t = <Num> { n = new ASTInit(new VInt(Integer.parseInt(t.image))); }
+        | t = <BOOL> { n = new ASTInit(new VBool(Boolean.parseBoolean(t.image))); }
+    )
+
+    { return n; }
 }

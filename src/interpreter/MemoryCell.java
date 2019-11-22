@@ -8,7 +8,7 @@ final class MemoryCell {
 
   MemoryCell(IValue value) {
     this.value = value;
-    references = 0;
+    references = 1;
   }
 
   MemoryCell(MemoryCell cell) {

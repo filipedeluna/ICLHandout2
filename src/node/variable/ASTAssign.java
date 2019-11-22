@@ -20,7 +20,7 @@ public class ASTAssign implements ASTNode {
   public IValue eval(Interpreter interpreter) throws InterpreterException {
     IValue iv = value.eval(interpreter);
 
-    interpreter.assignCell(id, iv);
+    interpreter.assign(id, iv);
 
     return null;
   }

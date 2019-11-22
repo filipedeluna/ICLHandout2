@@ -32,66 +32,44 @@ public class Interpreter {
     environment.endScope();
   }
 
-  public void assignCell(String id, IValue value) throws InterpreterException {
+  public void assign(String id, IValue value) throws InterpreterException {
     if (!(value instanceof VCell))
       throw new UnexpectedTypeException(value.typeToString(), "cell");
 
-    memory.addCellReference(((VCell) value).getAddress());
-
-    environment.assign(id, value);
+      environment.assign(id, ((VCell) value));
   }
 
-  public void applyValue(String id, IValue value) throws InterpreterException {
-    IValue oldValue = environment.find(id);
+  public void apply(IValue ref, IValue newValue) throws InterpreterException {
+    if (!(ref instanceof VCell))
+      throw new UnexpectedTypeException(ref.typeToString(), "cell");
 
-    if (oldValue instanceof VCell) {
-      int oldValueAddress = ((VCell) oldValue).getAddress();
-
-      memory.removeCellReference(oldValueAddress);
-    }
-
-    int memoryAddress;
-
-    if (value instanceof VCell) {
-      memoryAddress = ((VCell) value).getAddress();
-
-      memory.addCellReference(memoryAddress);
-    } else
-      memoryAddress = memory.addCell(value);
-
-    environment.assign(id, new VCell(memoryAddress));
+    memory.changeCellValue(((VCell) ref).getAddress(), newValue);
   }
 
-  public IValue find(String id) throws InterpreterException {
-    IValue value = environment.find(id);
+  public IValue deref(String id) throws InterpreterException {
+    VCell value = environment.find(id);
 
     if (value == null)
       throw new UndefinedVariableException(id);
 
-    if (value instanceof VCell)
-      value = memory.getCellValue(((VCell) value).getAddress());
-
-    return value;
+    return memory.getCellValue(value.getAddress());
   }
 
-  public VCell initCell(IValue value) throws InterpreterException {
+  public VCell init(IValue value) throws InterpreterException {
     if (value instanceof VCell)
-      memory.addCellReference(((VCell) value).getAddress());
+      throw new UnexpectedTypeException(value.typeToString(), "bool or int");
 
     int address = memory.addCell(value);
 
     return new VCell(address);
   }
 
-  public VCell getVarReference(String id) throws InterpreterException {
-    IValue value = environment.find(id);
+  public VCell find(String id) throws InterpreterException {
+    VCell value = environment.find(id);
 
     if (value == null)
       throw new UndefinedVariableException(id);
 
-    if (!(value instanceof VCell))
-      throw new UnexpectedTypeException(value.typeToString(), "cell");
-
-    return (VCell) value;
+    return value;
   }
 }
