@@ -30,7 +30,7 @@ public class ASTLogical implements ASTNode {
 
     if (v1 instanceof VBool && v2 instanceof VBool) {
       boolean b1 = ((VBool) v1).get();
-      boolean b2 = ((VBool) v1).get();
+      boolean b2 = ((VBool) v2).get();
 
       switch (operation) {
         case AND:

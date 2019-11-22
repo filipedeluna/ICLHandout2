@@ -26,14 +26,10 @@ public final class ASTIf implements ASTNode {
 
     IValue value;
 
-    interpreter.beginEnvScope();
-
     if (conditionResult)
       value = action1.eval(interpreter);
     else
       value = action2.eval(interpreter);
-
-    interpreter.endEnvScope();
 
     return value;
   }

@@ -29,7 +29,7 @@ public class ASTRelational implements ASTNode {
 
     if (v1 instanceof VInt && v2 instanceof VInt) {
       int i1 = ((VInt) v1).get();
-      int i2 = ((VInt) v1).get();
+      int i2 = ((VInt) v2).get();
 
       switch (operation) {
         case EQUALS:

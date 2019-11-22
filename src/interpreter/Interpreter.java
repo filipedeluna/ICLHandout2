@@ -13,9 +13,6 @@ public class Interpreter {
   public Interpreter() {
     environment = new Environment();
     memory = new Memory();
-
-    // Begin main program scope
-    environment.beginScope();
   }
 
   public void beginEnvScope() {

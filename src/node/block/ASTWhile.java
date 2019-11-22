@@ -20,13 +20,9 @@ public final class ASTWhile implements ASTNode {
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpreterException {
-    interpreter.beginEnvScope();
-
     while (verifyCondition(interpreter, condition)) {
       action.eval(interpreter);
     }
-
-    interpreter.endEnvScope();
 
     return null;
   }
@@ -35,6 +31,10 @@ public final class ASTWhile implements ASTNode {
   public void compile(Compiler compiler) throws CompilerException {
     // TODO
   }
+
+  /*
+    UTILS
+  */
 
   private boolean verifyCondition(Interpreter interpreter, ASTNode condition) throws InterpreterException {
     IValue conditionResult = condition.eval(interpreter);
