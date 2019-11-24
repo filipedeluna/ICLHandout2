@@ -21,10 +21,6 @@ public class ASTDeref implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    compiler.loadStaticLink();
-
-    // TODO
-
-    compiler.addFieldToFrame(id);
+    compiler.getFrameField(id);
   }
 }

@@ -11,7 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-final class CompilerWriter {
+final class Writer {
   private static final String DEFAULT_OUTPUT_FILE = "output.j";
   private static final String DEFAULT_OUTPUT_FOLDER = ""; // sources root
 
@@ -24,7 +24,7 @@ final class CompilerWriter {
 
   private HashSet<String> fileSet;
 
-  CompilerWriter() throws CompilerException {
+  Writer() throws CompilerException {
     try {
       File outputFile = new File(DEFAULT_OUTPUT_FILE);
 
@@ -57,7 +57,7 @@ final class CompilerWriter {
     write(ByteCode.LOAD, DEFAULT_STATIC_LINK);
   }
 
-  void beginFrame(CompilerFrame frame) throws CompilerException {
+  void beginFrame(Frame frame) throws CompilerException {
     String frameId = frame.getFrameId();
 
     // create frame
@@ -67,7 +67,7 @@ final class CompilerWriter {
     write(ByteCode.DUP);
 
     // store static link to frame
-    write(ByteCode.LOAD, DEFAULT_STATIC_LINK);
+    loadStaticLink();
     write(ByteCode.PUT_FIELD, frameId + "/sl Ljava/lang/Object;");
     write(ByteCode.STORE, DEFAULT_STATIC_LINK);
 
@@ -75,7 +75,7 @@ final class CompilerWriter {
     createFrameClassFile(frameId, null);
   }
 
-  void beginSubFrame(CompilerFrame frame) throws CompilerException {
+  void beginSubFrame(Frame frame) throws CompilerException {
     String frameId = frame.getFrameId();
     String parentFrameId = frame.getParentFrame().getFrameId();
 
@@ -87,7 +87,7 @@ final class CompilerWriter {
     write(ByteCode.DUP);
 
     // store static link to subFrame
-    write(ByteCode.LOAD, DEFAULT_STATIC_LINK);
+    loadStaticLink();
     write(ByteCode.PUT_FIELD, frameId + "/sl L" + parentFrameId + ';');
     write(ByteCode.STORE, DEFAULT_STATIC_LINK);
 
@@ -95,11 +95,11 @@ final class CompilerWriter {
     createFrameClassFile(frameId, parentFrameId);
   }
 
-  void endFrame(CompilerFrame frame) throws CompilerException {
+  void endFrame(Frame frame) throws CompilerException {
     String frameId = frame.getFrameId();
 
     // retrieve parent frame static link
-    write(ByteCode.LOAD, DEFAULT_STATIC_LINK);
+    loadStaticLink();
 
     if (frame.getParentFrame() != null)
       write(ByteCode.GET_FIELD, frameId + "/sl L" + frame.getParentFrame().getFrameId() + ';');
@@ -109,17 +109,16 @@ final class CompilerWriter {
     write(ByteCode.STORE, DEFAULT_STATIC_LINK);
   }
 
-  void addFieldToFrame(String varIndex, CompilerFrame frame) throws CompilerException {
+  void addFrameField(String varIndex, Frame frame) throws CompilerException {
     String frameId = frame.getFrameId();
 
     write(ByteCode.PUT_FIELD, frameId + '/' + varIndex + " I");
   }
 
-  void getFieldFromFrame(CompilerFrameField compilerFrameField) throws CompilerException {
-    ArrayList<String> subFrames = compilerFrameField.getFrameList();
-    String fieldId = compilerFrameField.getFieldId();
+  void getFrameParentFields(FrameField frameField) throws CompilerException {
+    ArrayList<String> subFrames = frameField.getFrameList();
 
-    write(ByteCode.LOAD, DEFAULT_STATIC_LINK);
+    loadStaticLink();
 
     int i = 0;
 
@@ -127,8 +126,24 @@ final class CompilerWriter {
       i++;
       write(ByteCode.GET_FIELD, subFrames.get(i - 1) + "/sl " + 'L' + subFrames.get(i) + ';');
     }
+  }
 
-    write(ByteCode.GET_FIELD, subFrames.get(i) + '/' + fieldId + " I");
+  void getFrameField(FrameField frameField) throws CompilerException {
+    ArrayList<String> subFrames = frameField.getFrameList();
+    String fieldId = frameField.getFieldId();
+
+    loadStaticLink();
+
+    getFrameParentFields(frameField);
+
+    write(ByteCode.GET_FIELD, subFrames.get(subFrames.size() - 1) + '/' + fieldId + " I");
+  }
+
+  void updateFrameField(FrameField frameField) throws CompilerException {
+    ArrayList<String> subFrames = frameField.getFrameList();
+    String fieldId = frameField.getFieldId();
+
+    write(ByteCode.PUT_FIELD, subFrames.get(subFrames.size() - 1) + '/' + fieldId + " I");
   }
 
   // Write footer and close file writer

@@ -2,11 +2,11 @@ package compiler;
 
 import java.util.ArrayList;
 
-final class CompilerFrameField {
+final class FrameField {
   private ArrayList<String> frameList;
   private String fieldId;
 
-  CompilerFrameField(String fieldId, ArrayList<String> frameList) {
+  FrameField(String fieldId, ArrayList<String> frameList) {
     this.fieldId = fieldId;
     this.frameList = frameList;
   }

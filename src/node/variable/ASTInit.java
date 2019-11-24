@@ -1,11 +1,15 @@
 package node.variable;
 
+import compiler.ByteCode;
 import compiler.Compiler;
+import errors.compiler.InvalidTypeException;
 import interpreter.Interpreter;
 import errors.compiler.CompilerException;
 import errors.interpreter.InterpreterException;
 import node.ASTNode;
 import value.IValue;
+import value.VBool;
+import value.VInt;
 
 public class ASTInit implements ASTNode {
   private IValue value;
@@ -21,8 +25,15 @@ public class ASTInit implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    compiler.loadStaticLink();
-    // TODO
-    // value.compile(compiler);
+    String parsedVal;
+
+    if (value instanceof VInt)
+      parsedVal = value.toString();
+    else if (value instanceof VBool)
+      parsedVal = ((VBool) value).get() ? "1" : "0";
+    else
+      throw new InvalidTypeException(value, "int or bool");
+
+    compiler.emit(ByteCode.PUSH, parsedVal);
   }
 }

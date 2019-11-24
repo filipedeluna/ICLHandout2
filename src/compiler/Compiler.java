@@ -1,74 +1,117 @@
 package compiler;
 
-import errors.compiler.CompilerException;
-import errors.compiler.FailedToDeleteFilesException;
-import errors.compiler.OutputFileWriteException;
-import errors.compiler.VariableReferencingException;
+import errors.compiler.*;
+import node.ASTNode;
 
 public final class Compiler {
-  private CompilerWriter compilerWriter;
+  private Writer writer;
+  private Frame currentFrame;
   private int frameIdCounter;
-  private CompilerFrame currentFrame;
+
+  // Temporary frame field "memory" register
+  private String currentFieldId;
 
   public Compiler() throws CompilerException {
-    this.compilerWriter = new CompilerWriter();
+    this.writer = new Writer();
     this.frameIdCounter = 0;
 
     currentFrame = null;
+
+    currentFieldId = null;
   }
 
   public void emit(ByteCode byteCode, String params) throws CompilerException {
-    compilerWriter.write(byteCode, params);
+    writer.write(byteCode, params);
   }
 
   public void emit(ByteCode byteCode) throws CompilerException {
-    compilerWriter.write(byteCode);
+    writer.write(byteCode);
   }
 
   public void beginFrame() throws CompilerException {
     String frameId = generateFrameId();
 
     if (currentFrame == null) {
-      currentFrame = new CompilerFrame(frameId);
-      compilerWriter.beginFrame(currentFrame);
+      currentFrame = new Frame(frameId);
+      writer.beginFrame(currentFrame);
     } else {
-      currentFrame = new CompilerFrame(frameId, currentFrame);
-      compilerWriter.beginSubFrame(currentFrame);
+      currentFrame = new Frame(frameId, currentFrame);
+      writer.beginSubFrame(currentFrame);
     }
   }
 
-  public void addFieldToFrame(String id) throws CompilerException {
-    if (currentFrame == null)
-      throw new VariableReferencingException(id);
+  public void pushFrameField(String id) throws CompilerException {
+    if (currentFrame.getFrameField(id) == null)
+      throw new CompilerUndefinedVariableException(id);
 
-    String varIndex = currentFrame.addField(id);
-    compilerWriter.addFieldToFrame(varIndex, currentFrame);
+    currentFieldId = id;
   }
 
-  public void getFieldFromFrame(String id) throws CompilerException {
+  public String popFrameField() throws CompilerException {
+    if (currentFieldId == null)
+      throw new EmptyCompilerRegisterException();
+
+    String value = currentFieldId;
+    currentFieldId = null;
+
+    return value;
+  }
+
+  public void addFrameField(String id) throws CompilerException {
     if (currentFrame == null)
       throw new VariableReferencingException(id);
 
-    CompilerFrameField compilerFrameField = currentFrame.getFrameField(id);
+    if (currentFrame.hasField(id))
+      throw new CompilerDuplicateVariableException(id);
 
-    compilerWriter.getFieldFromFrame(compilerFrameField);
+    String varIndex = currentFrame.addField(id);
+    writer.addFrameField(varIndex, currentFrame);
+  }
+
+  public void updateFrameField(String id, ASTNode value) throws CompilerException {
+
+    if (currentFrame == null)
+      throw new VariableReferencingException(id);
+
+    FrameField frameField = currentFrame.getFrameField(id);
+
+    if (frameField == null)
+      throw new CompilerUndefinedVariableException(id);
+
+    writer.getFrameParentFields(frameField);
+
+    value.compile(this);
+
+    writer.updateFrameField(frameField);
+  }
+
+  public void getFrameField(String id) throws CompilerException {
+    if (currentFrame == null)
+      throw new VariableReferencingException(id);
+
+    FrameField frameField = currentFrame.getFrameField(id);
+
+    if (frameField == null)
+      throw new CompilerUndefinedVariableException(id);
+
+    writer.getFrameField(frameField);
   }
 
   public void endFrame() throws CompilerException {
-    compilerWriter.endFrame(currentFrame);
+    writer.endFrame(currentFrame);
     currentFrame = currentFrame.getParentFrame();
   }
 
   public void loadStaticLink() throws CompilerException {
-    compilerWriter.loadStaticLink();
+    writer.loadStaticLink();
   }
 
   public void end() throws OutputFileWriteException {
-    compilerWriter.close();
+    writer.close();
   }
 
   public void deleteGeneratedFiles() throws FailedToDeleteFilesException {
-    compilerWriter.deleteFiles();
+    writer.deleteFiles();
   }
 
   /*

@@ -45,8 +45,8 @@ public class Parser {
 
                 // COMPILE
                 compiler = new Compiler();
-                // exp.compile(compiler);
-                // compiler.end();
+                exp.compile(compiler);
+                compiler.end();
             } catch (Exception e) {
                 handleErrors(e, compiler);
                 parser.ReInit(System.in);

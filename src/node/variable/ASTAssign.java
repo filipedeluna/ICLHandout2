@@ -31,6 +31,6 @@ public class ASTAssign implements ASTNode {
 
     value.compile(compiler);
 
-    compiler.addFieldToFrame(id);
+    compiler.addFrameField(id);
   }
 }

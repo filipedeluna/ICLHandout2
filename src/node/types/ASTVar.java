@@ -21,6 +21,6 @@ public final class ASTVar implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    compiler.getFieldFromFrame(id);
+    compiler.pushFrameField(id);
   }
 }
