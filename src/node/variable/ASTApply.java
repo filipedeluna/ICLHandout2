@@ -28,6 +28,10 @@ public class ASTApply implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
+    compiler.loadStaticLink();
+
+    ref.compile(compiler);
+
     String id = compiler.popFrameField();
 
     compiler.updateFrameField(id, value);

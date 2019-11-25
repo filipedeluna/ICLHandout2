@@ -56,6 +56,8 @@ final class CompilerWriterHandler {
     writer.writeBytecode(ByteCode.PUT_FIELD, frameId + "/sl Ljava/lang/Object;");
     writer.writeBytecode(ByteCode.STORE, DEFAULT_STATIC_LINK);
 
+    writer.writeLine("");
+
     // create class file for frame with no parent
     createFrameClassFile(frameId, null);
   }
@@ -76,12 +78,16 @@ final class CompilerWriterHandler {
     writer.writeBytecode(ByteCode.PUT_FIELD, frameId + "/sl L" + parentFrameId + ';');
     writer.writeBytecode(ByteCode.STORE, DEFAULT_STATIC_LINK);
 
+    writer.writeLine("");
+
     // create class file for frame with parent
     createFrameClassFile(frameId, parentFrameId);
   }
 
   void endFrame(Frame frame) throws CompilerException {
     String frameId = frame.getFrameId();
+
+    writer.writeLine("");
 
     // retrieve parent frame static link
     loadStaticLink();
@@ -103,8 +109,6 @@ final class CompilerWriterHandler {
   void getFrameParentFields(FrameField frameField) throws CompilerException {
     ArrayList<String> subFrames = frameField.getFrameList();
 
-    loadStaticLink();
-
     int i = 0;
 
     while (i < subFrames.size() - 1) {
@@ -119,7 +123,8 @@ final class CompilerWriterHandler {
 
     loadStaticLink();
 
-    getFrameParentFields(frameField);
+    if (subFrames.size() > 1)
+      getFrameParentFields(frameField);
 
     writer.writeBytecode(ByteCode.GET_FIELD, subFrames.get(subFrames.size() - 1) + '/' + fieldId + " I");
   }
@@ -134,7 +139,7 @@ final class CompilerWriterHandler {
   void compare(ByteCode comparisonByteCode) throws OutputFileWriteException {
     int currentLine = writer.getCurrentLine();
 
-    writer.writeBytecode(comparisonByteCode, String.valueOf(currentLine + 2));
+    writer.writeBytecode(comparisonByteCode, String.valueOf(currentLine + 3));
     writer.writeBytecode(ByteCode.CONST_0);
     writer.writeBytecode(ByteCode.GOTO, String.valueOf(currentLine + 4));
     writer.writeBytecode(ByteCode.CONST_1);

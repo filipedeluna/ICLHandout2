@@ -71,16 +71,22 @@ public class ASTRelational implements ASTNode {
     switch (operation) {
       case EQUALS:
         compiler.compare(ByteCode.EQUALS);
+        break;
       case DIFFERS:
         compiler.compare(ByteCode.NOT_EQUALS);
+        break;
       case GREATER_THAN:
         compiler.compare(ByteCode.GREATER);
+        break;
       case LOWER_THAN:
         compiler.compare(ByteCode.LESSER);
+        break;
       case GREATER_OR_EQUALS:
         compiler.compare(ByteCode.GREATER_OR_EQ);
+        break;
       case LOWER_OR_EQUALS:
         compiler.compare(ByteCode.LESSER_OR_EQ);
+        break;
       default:
         throw new UndefinedOperationException(operation);
     }

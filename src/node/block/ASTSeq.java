@@ -25,6 +25,8 @@ public class ASTSeq implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
+    statement.compile(compiler);
 
+    node.compile(compiler);
   }
 }
