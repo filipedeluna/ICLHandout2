@@ -4,7 +4,7 @@ import errors.compiler.*;
 import node.ASTNode;
 
 public final class Compiler {
-  private Writer writer;
+  private CompilerWriterHandler compilerWriterHandler;
   private Frame currentFrame;
   private int frameIdCounter;
 
@@ -12,7 +12,7 @@ public final class Compiler {
   private String currentFieldId;
 
   public Compiler() throws CompilerException {
-    this.writer = new Writer();
+    this.compilerWriterHandler = new CompilerWriterHandler();
     this.frameIdCounter = 0;
 
     currentFrame = null;
@@ -21,11 +21,11 @@ public final class Compiler {
   }
 
   public void emit(ByteCode byteCode, String params) throws CompilerException {
-    writer.write(byteCode, params);
+    compilerWriterHandler.write(byteCode, params);
   }
 
   public void emit(ByteCode byteCode) throws CompilerException {
-    writer.write(byteCode);
+    compilerWriterHandler.write(byteCode);
   }
 
   public void beginFrame() throws CompilerException {
@@ -33,10 +33,10 @@ public final class Compiler {
 
     if (currentFrame == null) {
       currentFrame = new Frame(frameId);
-      writer.beginFrame(currentFrame);
+      compilerWriterHandler.beginFrame(currentFrame);
     } else {
       currentFrame = new Frame(frameId, currentFrame);
-      writer.beginSubFrame(currentFrame);
+      compilerWriterHandler.beginSubFrame(currentFrame);
     }
   }
 
@@ -65,7 +65,7 @@ public final class Compiler {
       throw new CompilerDuplicateVariableException(id);
 
     String varIndex = currentFrame.addField(id);
-    writer.addFrameField(varIndex, currentFrame);
+    compilerWriterHandler.addFrameField(varIndex, currentFrame);
   }
 
   public void updateFrameField(String id, ASTNode value) throws CompilerException {
@@ -78,11 +78,11 @@ public final class Compiler {
     if (frameField == null)
       throw new CompilerUndefinedVariableException(id);
 
-    writer.getFrameParentFields(frameField);
+    compilerWriterHandler.getFrameParentFields(frameField);
 
     value.compile(this);
 
-    writer.updateFrameField(frameField);
+    compilerWriterHandler.updateFrameField(frameField);
   }
 
   public void getFrameField(String id) throws CompilerException {
@@ -94,24 +94,38 @@ public final class Compiler {
     if (frameField == null)
       throw new CompilerUndefinedVariableException(id);
 
-    writer.getFrameField(frameField);
+    compilerWriterHandler.getFrameField(frameField);
+  }
+
+  public void compare(ByteCode comparisonByteCode) throws OutputFileWriteException {
+    compilerWriterHandler.compare(comparisonByteCode);
+  }
+
+  public int countLines(ASTNode action) throws CompilerException {
+    compilerWriterHandler.startLineCounter();
+    action.compile(this);
+    return compilerWriterHandler.endLineCounter();
+  }
+
+  public int getCurrentLine() {
+    return compilerWriterHandler.getCurrentLine();
   }
 
   public void endFrame() throws CompilerException {
-    writer.endFrame(currentFrame);
+    compilerWriterHandler.endFrame(currentFrame);
     currentFrame = currentFrame.getParentFrame();
   }
 
   public void loadStaticLink() throws CompilerException {
-    writer.loadStaticLink();
+    compilerWriterHandler.loadStaticLink();
   }
 
   public void end() throws OutputFileWriteException {
-    writer.close();
+    compilerWriterHandler.close();
   }
 
   public void deleteGeneratedFiles() throws FailedToDeleteFilesException {
-    writer.deleteFiles();
+    compilerWriterHandler.deleteGeneratedFiles();
   }
 
   /*

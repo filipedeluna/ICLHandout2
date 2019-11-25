@@ -1,5 +1,6 @@
 package node.block;
 
+import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
 import errors.compiler.CompilerException;
@@ -36,7 +37,21 @@ public final class ASTIf implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    // TODO
+    condition.compile(compiler);
+
+    int currentLine = compiler.getCurrentLine();
+    int action1Lines = compiler.countLines(action1);
+
+    // Start If
+    compiler.emit(ByteCode.IF, String.valueOf(currentLine + action1Lines + 2));
+    action1.compile(compiler);
+
+    int action2Lines = compiler.countLines(action2);
+    compiler.getCurrentLine();
+
+    // Start then
+    compiler.emit(ByteCode.GOTO, String.valueOf(currentLine + action2Lines + 2));
+    action2.compile(compiler);
   }
 
   private boolean verifyCondition(Interpreter interpreter, ASTNode condition) throws InterpreterException {

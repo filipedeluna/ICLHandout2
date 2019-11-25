@@ -53,7 +53,7 @@ final class Environment {
 
     if (scopes.peek() != null)
       for (Entry<String, VCell> entry : scopes.peek().entrySet()) {
-          scopeCells.add(entry.getValue());
+        scopeCells.add(entry.getValue());
       }
 
     return scopeCells;

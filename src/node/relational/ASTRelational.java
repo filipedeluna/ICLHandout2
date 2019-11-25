@@ -1,5 +1,6 @@
 package node.relational;
 
+import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
 import errors.compiler.CompilerException;
@@ -64,7 +65,22 @@ public class ASTRelational implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
+    left.compile(compiler);
+    right.compile(compiler);
+
     switch (operation) {
+      case EQUALS:
+        compiler.compare(ByteCode.EQUALS);
+      case DIFFERS:
+        compiler.compare(ByteCode.NOT_EQUALS);
+      case GREATER_THAN:
+        compiler.compare(ByteCode.GREATER);
+      case LOWER_THAN:
+        compiler.compare(ByteCode.LESSER);
+      case GREATER_OR_EQUALS:
+        compiler.compare(ByteCode.GREATER_OR_EQ);
+      case LOWER_OR_EQUALS:
+        compiler.compare(ByteCode.LESSER_OR_EQ);
       default:
         throw new UndefinedOperationException(operation);
     }

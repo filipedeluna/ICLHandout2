@@ -33,7 +33,7 @@ public class Interpreter {
     if (!(value instanceof VCell))
       throw new UnexpectedTypeException(value.typeToString(), "cell");
 
-      environment.assign(id, ((VCell) value));
+    environment.assign(id, ((VCell) value));
   }
 
   public void apply(IValue ref, IValue newValue) throws InterpreterException {

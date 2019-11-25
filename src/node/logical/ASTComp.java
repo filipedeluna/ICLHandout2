@@ -32,7 +32,9 @@ public class ASTComp implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    compiler.emit(ByteCode.PUSH, "-1");
-    compiler.emit(ByteCode.XOR);
+    node.compile(compiler);
+
+    compiler.emit(ByteCode.CONST_0);
+    compiler.compare(ByteCode.EQUALS);
   }
 }

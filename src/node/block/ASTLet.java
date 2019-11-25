@@ -37,6 +37,10 @@ public class ASTLet implements ASTNode {
   public void compile(Compiler compiler) throws CompilerException {
     compiler.beginFrame();
 
+    for (ASTAssign assignment : assignments) {
+      assignment.compile(compiler);
+    }
+
     node.compile(compiler);
 
     compiler.endFrame();

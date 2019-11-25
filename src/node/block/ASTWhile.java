@@ -1,5 +1,6 @@
 package node.block;
 
+import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
 import errors.compiler.CompilerException;
@@ -29,7 +30,17 @@ public final class ASTWhile implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompilerException {
-    // TODO
+    int conditionStartLine = compiler.getCurrentLine();
+    int actionLines = compiler.countLines(action);
+
+    // While start
+    condition.compile(compiler);
+    int conditionEndLine = compiler.getCurrentLine();
+    compiler.emit(ByteCode.IF, String.valueOf(conditionEndLine + actionLines + 2));
+
+    // Action
+    action.compile(compiler);
+    compiler.emit(ByteCode.GOTO, String.valueOf(conditionStartLine));
   }
 
   /*
