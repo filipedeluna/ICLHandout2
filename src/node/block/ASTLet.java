@@ -2,10 +2,13 @@ package node.block;
 
 import compiler.Compiler;
 import interpreter.Interpreter;
-import compiler.errors.CompilerError;
-import interpreter.errors.InterpreterError;
+import compiler.errors.CompileError;
+import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import node.variable.ASTAssign;
+import typechecker.TypeChecker;
+import typechecker.errors.TypeCheckError;
+import types.IType;
 import values.IValue;
 
 import java.util.ArrayList;
@@ -19,7 +22,7 @@ public class ASTLet implements ASTNode {
     this.assignments = assignments;
   }
 
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     interpreter.beginEnvScope();
 
     for (ASTAssign assignment : assignments) {
@@ -34,7 +37,7 @@ public class ASTLet implements ASTNode {
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     compiler.beginFrame();
 
     for (ASTAssign assignment : assignments) {
@@ -44,5 +47,14 @@ public class ASTLet implements ASTNode {
     node.compile(compiler);
 
     compiler.endFrame();
+  }
+
+  @Override
+  public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
+    // TODO must check scopes and etc here
+    // TODO typechecker frames
+    // TOdO overrides everywhere
+
+    return node.typeCheck(typeChecker);
   }
 }

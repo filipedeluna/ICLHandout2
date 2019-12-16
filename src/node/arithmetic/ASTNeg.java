@@ -3,10 +3,13 @@ package node.arithmetic;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import compiler.errors.CompilerError;
-import interpreter.errors.IncompatibleTypeError;
-import interpreter.errors.InterpreterError;
+import compiler.errors.CompileError;
+import interpreter.errors.InterpretationError;
 import node.ASTNode;
+import typechecker.TypeChecker;
+import typechecker.errors.TypeCheckError;
+import types.IType;
+import types.TInt;
 import values.IValue;
 import values.VInt;
 
@@ -18,7 +21,7 @@ public class ASTNeg implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     IValue value = node.eval(interpreter);
 
     if (value instanceof VInt) {
@@ -27,13 +30,23 @@ public class ASTNeg implements ASTNode {
       return new VInt(-i);
     }
 
-    throw new IncompatibleTypeError("negate", value);
+    throw new InterpretationError("Invalid value", "negate", value);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     node.compile(compiler);
 
     compiler.emit(ByteCode.NEG);
+  }
+
+  @Override
+  public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
+    IType type = node.typeCheck(typeChecker);
+
+    if (type instanceof TInt)
+      return TInt.SINGLETON;
+
+    throw new TypeCheckError("Invalid types", "negate", type);
   }
 }

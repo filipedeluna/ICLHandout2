@@ -3,23 +3,10 @@ package parser;
 
 import interpreter.errors.*;
 import compiler.errors.*;
-import node.arithmetic.*;
-import node.block.*;
-import node.instruction.*;
-import node.logical.*;
-import node.relational.*;
-import node.types.*;
-import node.variable.*;
-import typechecker.errors.*;
-import interpreter.errors.*;
 import node.*;
 
 import compiler.Compiler;
 import interpreter.Interpreter;
-import types.*;
-import values.*;
-
-import java.util.ArrayList;
 
 /** ID lister. */
 public class Parser {
@@ -46,9 +33,9 @@ public class Parser {
                 System.out.println();
 
                 // COMPILE
-                compiler = new Compiler();
-                exp.compile(compiler);
-                compiler.end();
+                // compiler = new Compiler();
+                // exp.compile(compiler);
+                // compiler.end();
             } catch (Exception e) {
                 handleErrors(e, compiler);
                 parser.ReInit(System.in);
@@ -63,11 +50,11 @@ public class Parser {
         try {
           if (compiler != null)
             compiler.deleteGeneratedFiles();
-        } catch (CompilerError ce) {
+        } catch (CompileError ce) {
             System.err.println(ce.getMessage());
         }
 
-        if (e instanceof CompilerError || e instanceof InterpreterError)
+        if (e instanceof CompileError || e instanceof InterpretationError)
             System.err.println(e.getMessage());
         else
             e.printStackTrace();

@@ -4,8 +4,8 @@ import compiler.ByteCode;
 import compiler.Compiler;
 import compiler.errors.InvalidTypeError;
 import interpreter.Interpreter;
-import compiler.errors.CompilerError;
-import interpreter.errors.InterpreterError;
+import compiler.errors.CompileError;
+import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
@@ -22,12 +22,12 @@ public class ASTInit implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     return interpreter.init(value);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     String parsedVal;
 
     if (value instanceof VInt)

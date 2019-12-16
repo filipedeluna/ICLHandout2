@@ -2,9 +2,12 @@ package node.block;
 
 import compiler.Compiler;
 import interpreter.Interpreter;
-import compiler.errors.CompilerError;
-import interpreter.errors.InterpreterError;
+import compiler.errors.CompileError;
+import interpreter.errors.InterpretationError;
 import node.ASTNode;
+import typechecker.TypeChecker;
+import typechecker.errors.TypeCheckError;
+import types.IType;
 import values.IValue;
 
 public class ASTSeq implements ASTNode {
@@ -17,16 +20,21 @@ public class ASTSeq implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     statement.eval(interpreter);
 
     return node.eval(interpreter);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     statement.compile(compiler);
 
     node.compile(compiler);
+  }
+
+  @Override
+  public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
+    return node.typeCheck(typeChecker);
   }
 }

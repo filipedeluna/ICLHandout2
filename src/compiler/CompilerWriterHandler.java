@@ -1,6 +1,6 @@
 package compiler;
 
-import compiler.errors.CompilerError;
+import compiler.errors.CompileError;
 import compiler.errors.FailedToDeleteFilesError;
 import compiler.errors.FileAlreadyExistsError;
 import compiler.errors.OutputFileWriteError;
@@ -20,7 +20,7 @@ final class CompilerWriterHandler {
 
   private BufferedCompilerWriter writer;
 
-  CompilerWriterHandler() throws CompilerError {
+  CompilerWriterHandler() throws CompileError {
     try {
       writer = new BufferedCompilerWriter(DEFAULT_OUTPUT_FILE, DEFAULT_OUTPUT_FOLDER);
 
@@ -42,7 +42,7 @@ final class CompilerWriterHandler {
     writer.writeBytecode(ByteCode.LOAD, DEFAULT_STATIC_LINK);
   }
 
-  void beginFrame(Frame frame) throws CompilerError {
+  void beginFrame(Frame frame) throws CompileError {
     String frameId = frame.getFrameId();
 
     // create frame
@@ -62,7 +62,7 @@ final class CompilerWriterHandler {
     createFrameClassFile(frameId, null);
   }
 
-  void beginSubFrame(Frame frame) throws CompilerError {
+  void beginSubFrame(Frame frame) throws CompileError {
     String frameId = frame.getFrameId();
     String parentFrameId = frame.getParentFrame().getFrameId();
 
@@ -84,7 +84,7 @@ final class CompilerWriterHandler {
     createFrameClassFile(frameId, parentFrameId);
   }
 
-  void endFrame(Frame frame) throws CompilerError {
+  void endFrame(Frame frame) throws CompileError {
     String frameId = frame.getFrameId();
 
     writer.writeLine("");
@@ -100,13 +100,13 @@ final class CompilerWriterHandler {
     writer.writeBytecode(ByteCode.STORE, DEFAULT_STATIC_LINK);
   }
 
-  void addFrameField(String varIndex, Frame frame) throws CompilerError {
+  void addFrameField(String varIndex, Frame frame) throws CompileError {
     String frameId = frame.getFrameId();
 
     writer.writeBytecode(ByteCode.PUT_FIELD, frameId + '/' + varIndex + " I");
   }
 
-  void getFrameParentFields(FrameField frameField) throws CompilerError {
+  void getFrameParentFields(FrameField frameField) throws CompileError {
     ArrayList<String> subFrames = frameField.getFrameList();
 
     int i = 0;
@@ -117,7 +117,7 @@ final class CompilerWriterHandler {
     }
   }
 
-  void getFrameField(FrameField frameField) throws CompilerError {
+  void getFrameField(FrameField frameField) throws CompileError {
     ArrayList<String> subFrames = frameField.getFrameList();
     String fieldId = frameField.getFieldId();
 
@@ -129,7 +129,7 @@ final class CompilerWriterHandler {
     writer.writeBytecode(ByteCode.GET_FIELD, subFrames.get(subFrames.size() - 1) + '/' + fieldId + " I");
   }
 
-  void updateFrameField(FrameField frameField) throws CompilerError {
+  void updateFrameField(FrameField frameField) throws CompileError {
     ArrayList<String> subFrames = frameField.getFrameList();
     String fieldId = frameField.getFieldId();
 

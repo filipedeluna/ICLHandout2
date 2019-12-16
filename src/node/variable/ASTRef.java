@@ -1,9 +1,9 @@
 package node.variable;
 
 import compiler.Compiler;
-import compiler.errors.CompilerError;
+import compiler.errors.CompileError;
 import interpreter.Interpreter;
-import interpreter.errors.InterpreterError;
+import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
@@ -18,12 +18,12 @@ public class ASTRef implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     return interpreter.deref(id);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     compiler.getFrameField(id);
   }
 

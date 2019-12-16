@@ -3,14 +3,19 @@ package node.arithmetic;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import compiler.errors.CompilerError;
-import compiler.errors.UndefinedOperationError;
-import interpreter.errors.DivideByZeroError;
-import interpreter.errors.IncompatibleTypesError;
-import interpreter.errors.InterpreterError;
+import compiler.errors.CompileError;
+import interpreter.errors.InterpretationError;
 import node.ASTNode;
+import typechecker.TypeChecker;
+import typechecker.errors.TypeCheckError;
+import types.IType;
+import types.TInt;
+import types.TString;
+import types.TStruct;
 import values.IValue;
 import values.VInt;
+import values.VString;
+import values.VStruct;
 
 public class ASTArithmetic implements ASTNode {
   private ArithmeticOperation operation;
@@ -24,7 +29,7 @@ public class ASTArithmetic implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     IValue v1 = left.eval(interpreter);
     IValue v2 = right.eval(interpreter);
 
@@ -41,16 +46,25 @@ public class ASTArithmetic implements ASTNode {
           return new VInt(i1 * i2);
         case DIV:
           if (i2 == 0)
-            throw new DivideByZeroError();
+            throw new InterpretationError("Attempted to divide by 0", operation.name());
           return new VInt(i1 / i2);
       }
     }
 
-    throw new IncompatibleTypesError(operation.name(), v1, v2);
+    // TODO Add struct here and string
+    if (operation == ArithmeticOperation.ADD) {
+      if (v1 instanceof VStruct && v2 instanceof VStruct) {
+      }
+
+      if (v1 instanceof VString && v2 instanceof VString) {
+      }
+    }
+
+    throw new InterpretationError("Invalid types", operation.name(), v1, v2);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     left.compile(compiler);
     right.compile(compiler);
 
@@ -68,7 +82,27 @@ public class ASTArithmetic implements ASTNode {
         compiler.emit(ByteCode.DIV);
         break;
       default:
-        throw new UndefinedOperationError(operation);
+        throw new CompileError("Undefined Operation", operation.name());
     }
+  }
+
+  @Override
+  public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
+    IType type1 = left.typeCheck(typeChecker);
+    IType type2 = right.typeCheck(typeChecker);
+
+    if (!type1.equals(type2))
+      throw new TypeCheckError("Type mismatch", operation.name(), type1, type2);
+
+    if (type1 instanceof TInt)
+      return TInt.SINGLETON;
+
+    if (type1 instanceof TStruct)
+      return TStruct.SINGLETON;
+
+    if (type1 instanceof TString)
+      return TString.SINGLETON;
+
+    throw new TypeCheckError("Invalid types", operation.name(), type1);
   }
 }

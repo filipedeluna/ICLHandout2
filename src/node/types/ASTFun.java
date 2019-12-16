@@ -1,8 +1,8 @@
 package node.types;
 
 import compiler.Compiler;
-import compiler.errors.CompilerError;
-import interpreter.errors.InterpreterError;
+import compiler.errors.CompileError;
+import interpreter.errors.InterpretationError;
 import interpreter.Interpreter;
 import node.ASTNode;
 import types.IType;
@@ -17,12 +17,12 @@ public final class ASTFun implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     return interpreter.find(id);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     compiler.pushFrameField(id);
   }
 }

@@ -11,7 +11,7 @@ public final class Compiler {
   // Temporary frame field "memory" register
   private String currentFieldId;
 
-  public Compiler() throws CompilerError {
+  public Compiler() throws CompileError {
     this.compilerWriterHandler = new CompilerWriterHandler();
     this.frameIdCounter = 0;
 
@@ -20,15 +20,15 @@ public final class Compiler {
     currentFieldId = null;
   }
 
-  public void emit(ByteCode byteCode, String params) throws CompilerError {
+  public void emit(ByteCode byteCode, String params) throws CompileError {
     compilerWriterHandler.write(byteCode, params);
   }
 
-  public void emit(ByteCode byteCode) throws CompilerError {
+  public void emit(ByteCode byteCode) throws CompileError {
     compilerWriterHandler.write(byteCode);
   }
 
-  public void beginFrame() throws CompilerError {
+  public void beginFrame() throws CompileError {
     String frameId = generateFrameId();
 
     if (currentFrame == null) {
@@ -40,14 +40,14 @@ public final class Compiler {
     }
   }
 
-  public void pushFrameField(String id) throws CompilerError {
+  public void pushFrameField(String id) throws CompileError {
     if (currentFrame.getFrameField(id) == null)
       throw new CompilerUndefinedVariableError(id);
 
     currentFieldId = id;
   }
 
-  public String popFrameField() throws CompilerError {
+  public String popFrameField() throws CompileError {
     if (currentFieldId == null)
       throw new EmptyCompilerRegisterError();
 
@@ -57,7 +57,7 @@ public final class Compiler {
     return value;
   }
 
-  public void addFrameField(String id) throws CompilerError {
+  public void addFrameField(String id) throws CompileError {
     if (currentFrame == null)
       throw new VariableReferencingError(id);
 
@@ -68,7 +68,7 @@ public final class Compiler {
     compilerWriterHandler.addFrameField(varIndex, currentFrame);
   }
 
-  public void updateFrameField(String id, ASTNode value) throws CompilerError {
+  public void updateFrameField(String id, ASTNode value) throws CompileError {
 
     if (currentFrame == null)
       throw new VariableReferencingError(id);
@@ -85,7 +85,7 @@ public final class Compiler {
     compilerWriterHandler.updateFrameField(frameField);
   }
 
-  public void getFrameField(String id) throws CompilerError {
+  public void getFrameField(String id) throws CompileError {
     if (currentFrame == null)
       throw new VariableReferencingError(id);
 
@@ -101,7 +101,7 @@ public final class Compiler {
     compilerWriterHandler.compare(comparisonByteCode);
   }
 
-  public int countLines(ASTNode action) throws CompilerError {
+  public int countLines(ASTNode action) throws CompileError {
     compilerWriterHandler.startLineCounter();
     action.compile(this);
     return compilerWriterHandler.endLineCounter();
@@ -111,12 +111,12 @@ public final class Compiler {
     return compilerWriterHandler.getCurrentLine();
   }
 
-  public void endFrame() throws CompilerError {
+  public void endFrame() throws CompileError {
     compilerWriterHandler.endFrame(currentFrame);
     currentFrame = currentFrame.getParentFrame();
   }
 
-  public void loadStaticLink() throws CompilerError {
+  public void loadStaticLink() throws CompileError {
     compilerWriterHandler.loadStaticLink();
   }
 

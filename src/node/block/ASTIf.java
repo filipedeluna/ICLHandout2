@@ -3,10 +3,13 @@ package node.block;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import compiler.errors.CompilerError;
-import interpreter.errors.InterpreterError;
-import interpreter.errors.UnexpectedTypeError;
+import compiler.errors.CompileError;
+import interpreter.errors.InterpretationError;
 import node.ASTNode;
+import typechecker.TypeChecker;
+import typechecker.errors.TypeCheckError;
+import types.IType;
+import types.TBool;
 import values.IValue;
 import values.VBool;
 
@@ -22,7 +25,7 @@ public final class ASTIf implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     boolean conditionResult = verifyCondition(interpreter, condition);
 
     IValue value;
@@ -36,7 +39,7 @@ public final class ASTIf implements ASTNode {
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     condition.compile(compiler);
 
     int currentLine = compiler.getCurrentLine();
@@ -54,11 +57,22 @@ public final class ASTIf implements ASTNode {
     action2.compile(compiler);
   }
 
-  private boolean verifyCondition(Interpreter interpreter, ASTNode condition) throws InterpreterError {
+  @Override
+  public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
+    IType condType = condition.typeCheck(typeChecker);
+
+    if (!(condType instanceof TBool))
+      throw new TypeCheckError("Invalid type for condition", "if", condType);
+
+    // TODO check this... possible to deduce return value?
+    return null;
+  }
+
+  private boolean verifyCondition(Interpreter interpreter, ASTNode condition) throws InterpretationError {
     IValue conditionResult = condition.eval(interpreter);
 
     if (!(conditionResult instanceof VBool))
-      throw new UnexpectedTypeError(conditionResult.type(), "bool");
+      throw new InterpretationError("Invalid value for condition", "if", conditionResult);
 
     return ((VBool) conditionResult).get();
   }

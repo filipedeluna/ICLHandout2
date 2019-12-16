@@ -3,10 +3,13 @@ package node.types;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import compiler.errors.CompilerError;
-import interpreter.errors.InterpreterError;
-import interpreter.errors.UnexpectedTypeError;
+import compiler.errors.CompileError;
+import interpreter.errors.InterpretationError;
 import node.ASTNode;
+import typechecker.TypeChecker;
+import typechecker.errors.TypeCheckError;
+import types.IType;
+import types.TBool;
 import values.IValue;
 import values.VBool;
 
@@ -18,17 +21,26 @@ public final class ASTBool implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     if (!(val instanceof VBool))
-      throw new UnexpectedTypeError(val.type().toString(), "bool");
+      throw new InterpretationError("Unexpected value type", "cast to bool", val.type());
 
     return val;
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     boolean b = ((VBool) val).get();
 
     compiler.emit(ByteCode.PUSH, b ? "1" : "0");
+  }
+
+  @Override
+  public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
+    if (!(val.type() instanceof TBool))
+      throw new TypeCheckError("Unexpected type", "cast to bool", val.type());
+
+    // TODO WAS HERE
+    return TBool.SINGLETON;
   }
 }

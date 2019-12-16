@@ -1,6 +1,6 @@
 package interpreter;
 
-import interpreter.errors.InterpreterError;
+import interpreter.errors.InterpretationError;
 import interpreter.errors.OutsideOfScopeError;
 import interpreter.errors.VariableAlreadyDefinedError;
 import values.VCell;
@@ -25,7 +25,7 @@ final class Environment {
     scopes.pop();
   }
 
-  void assign(String id, VCell cell) throws InterpreterError {
+  void assign(String id, VCell cell) throws InterpretationError {
     if (scopes.size() == 0 || scopes.peek() == null)
       throw new OutsideOfScopeError(id);
 

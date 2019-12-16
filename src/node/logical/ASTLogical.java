@@ -3,11 +3,13 @@ package node.logical;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import compiler.errors.CompilerError;
-import compiler.errors.UndefinedOperationError;
-import interpreter.errors.InterpreterError;
-import interpreter.errors.IncompatibleTypesError;
+import compiler.errors.CompileError;
+import interpreter.errors.InterpretationError;
 import node.ASTNode;
+import typechecker.TypeChecker;
+import typechecker.errors.TypeCheckError;
+import types.IType;
+import types.TBool;
 import values.IValue;
 import values.VBool;
 
@@ -22,9 +24,8 @@ public class ASTLogical implements ASTNode {
     this.right = right;
   }
 
-
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     IValue v1 = left.eval(interpreter);
     IValue v2 = right.eval(interpreter);
 
@@ -40,11 +41,11 @@ public class ASTLogical implements ASTNode {
       }
     }
 
-    throw new IncompatibleTypesError(operation.name(), v1, v2);
+    throw new InterpretationError("Invalid types for operation", operation.name(), v1.type(), v2.type());
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     left.compile(compiler);
     right.compile(compiler);
 
@@ -56,7 +57,18 @@ public class ASTLogical implements ASTNode {
         compiler.emit(ByteCode.OR);
         break;
       default:
-        throw new UndefinedOperationError(operation);
+        throw new CompileError("Undefined operation", operation.name());
     }
+  }
+
+  @Override
+  public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
+    IType type1 = left.typeCheck(typeChecker);
+    IType type2 = right.typeCheck(typeChecker);
+
+    if (!(type1 instanceof TBool) && !(type2 instanceof TBool))
+      throw new TypeCheckError("Invalid types for operation", operation.name(), type1, type2);
+
+    return TBool.SINGLETON;
   }
 }

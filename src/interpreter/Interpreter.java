@@ -1,7 +1,7 @@
 package interpreter;
 
 import interpreter.errors.CellNotFoundError;
-import interpreter.errors.InterpreterError;
+import interpreter.errors.InterpretationError;
 import interpreter.errors.InterpreterUndefinedVariableError;
 import interpreter.errors.UnexpectedTypeError;
 import values.IValue;
@@ -32,21 +32,21 @@ public class Interpreter {
     environment.endScope();
   }
 
-  public void assign(String id, IValue value) throws InterpreterError {
+  public void assign(String id, IValue value) throws InterpretationError {
     if (!(value instanceof VCell))
       throw new UnexpectedTypeError(value.type(), "cell");
 
     environment.assign(id, ((VCell) value));
   }
 
-  public void apply(IValue ref, IValue newValue) throws InterpreterError {
+  public void apply(IValue ref, IValue newValue) throws InterpretationError {
     if (!(ref instanceof VCell))
       throw new UnexpectedTypeError(ref.type(), "cell");
 
     memory.changeCellValue(((VCell) ref).get(), newValue);
   }
 
-  public IValue deref(String id) throws InterpreterError {
+  public IValue deref(String id) throws InterpretationError {
     VCell value = environment.find(id);
 
     if (value == null)
@@ -55,7 +55,7 @@ public class Interpreter {
     return memory.getCellValue(value.get());
   }
 
-  public VCell init(IValue value) throws InterpreterError {
+  public VCell init(IValue value) throws InterpretationError {
     if (value instanceof VCell)
       throw new UnexpectedTypeError(value.type(), "bool or int");
 
@@ -64,7 +64,7 @@ public class Interpreter {
     return new VCell(address);
   }
 
-  public VCell find(String id) throws InterpreterError {
+  public VCell find(String id) throws InterpretationError {
     VCell value = environment.find(id);
 
     if (value == null)

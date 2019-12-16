@@ -2,9 +2,9 @@ package node.types;
 
 import compiler.ByteCode;
 import compiler.Compiler;
-import compiler.errors.CompilerError;
+import compiler.errors.CompileError;
 import interpreter.Interpreter;
-import interpreter.errors.InterpreterError;
+import interpreter.errors.InterpretationError;
 import interpreter.errors.UnexpectedTypeError;
 import node.ASTNode;
 import typechecker.TypeChecker;
@@ -21,7 +21,7 @@ public final class ASTStructDeref implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     if (!(val instanceof VInt))
       throw new UnexpectedTypeError(val.type().toString(), "int");
 
@@ -29,7 +29,7 @@ public final class ASTStructDeref implements ASTNode {
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     compiler.emit(ByteCode.PUSH, String.valueOf(val));
   }
 

@@ -2,8 +2,8 @@ package node.variable;
 
 import compiler.Compiler;
 import interpreter.Interpreter;
-import compiler.errors.CompilerError;
-import interpreter.errors.InterpreterError;
+import compiler.errors.CompileError;
+import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
@@ -20,7 +20,7 @@ public class ASTAssign implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterError {
+  public IValue eval(Interpreter interpreter) throws InterpretationError {
     IValue iv = value.eval(interpreter);
 
     interpreter.assign(id, iv);
@@ -29,7 +29,7 @@ public class ASTAssign implements ASTNode {
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerError {
+  public void compile(Compiler compiler) throws CompileError {
     compiler.loadStaticLink();
 
     value.compile(compiler);
