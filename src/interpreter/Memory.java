@@ -1,9 +1,9 @@
 package interpreter;
 
-import errors.interpreter.MemoryCorruptionException;
-import errors.interpreter.CellNotFoundInMemoryException;
-import value.IValue;
-import value.VCell;
+import interpreter.errors.MemoryCorruptionError;
+import interpreter.errors.CellNotFoundError;
+import values.IValue;
+import values.VCell;
 
 import java.util.HashMap;
 
@@ -16,9 +16,9 @@ class Memory {
     addressCounter = 0;
   }
 
-  int addCell(IValue value) throws CellNotFoundInMemoryException {
+  int addCell(IValue value) throws CellNotFoundError {
     if (value instanceof VCell) {
-      int cellRefAddress = ((VCell) value).getAddress();
+      int cellRefAddress = ((VCell) value).get();
       addCellReference(cellRefAddress);
     }
 
@@ -28,37 +28,37 @@ class Memory {
   }
 
   // Recursively obtain memory value because cells can point to other cells
-  IValue getCellValue(int address) throws CellNotFoundInMemoryException, MemoryCorruptionException {
+  IValue getCellValue(int address) throws CellNotFoundError, MemoryCorruptionError {
     MemoryCell cell = getCell(address);
 
     IValue value = cell.getValue();
 
     if (value == null)
-      throw new MemoryCorruptionException();
+      throw new MemoryCorruptionError();
 
     if (value instanceof VCell)
-      value = getCellValue(((VCell) value).getAddress());
+      value = getCellValue(((VCell) value).get());
 
     return value;
   }
 
-  void changeCellValue(int address, IValue value) throws CellNotFoundInMemoryException {
+  void changeCellValue(int address, IValue value) throws CellNotFoundError {
     MemoryCell oldCell = getCell(address);
 
     memory.remove(address);
 
     if (oldCell.getValue() instanceof VCell) {
-      int oldCellValueAddress = ((VCell) oldCell.getValue()).getAddress();
+      int oldCellValueAddress = ((VCell) oldCell.getValue()).get();
       removeCellReference(oldCellValueAddress);
     }
 
     memory.put(address, new MemoryCell(value));
 
     if (value instanceof VCell)
-      addCellReference(((VCell) value).getAddress());
+      addCellReference(((VCell) value).get());
   }
 
-  void addCellReference(int address) throws CellNotFoundInMemoryException {
+  void addCellReference(int address) throws CellNotFoundError {
     MemoryCell oldCell = getCell(address);
 
     oldCell.incReferences();
@@ -66,7 +66,7 @@ class Memory {
     memory.put(address, new MemoryCell(oldCell));
   }
 
-  void removeCellReference(int address) throws CellNotFoundInMemoryException {
+  void removeCellReference(int address) throws CellNotFoundError {
     MemoryCell oldCell = getCell(address);
 
     oldCell.decReferences();
@@ -80,11 +80,11 @@ class Memory {
   /*
     UTILS
   */
-  private MemoryCell getCell(int address) throws CellNotFoundInMemoryException {
+  private MemoryCell getCell(int address) throws CellNotFoundError {
     MemoryCell cell = memory.get(address);
 
     if (cell == null)
-      throw new CellNotFoundInMemoryException();
+      throw new CellNotFoundError();
 
     return cell;
   }

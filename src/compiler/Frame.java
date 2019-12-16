@@ -1,8 +1,7 @@
 package compiler;
 
-import errors.compiler.CompilerException;
-import errors.compiler.CompilerDuplicateVariableException;
-import errors.compiler.CompilerUndefinedVariableException;
+import compiler.errors.CompilerError;
+import compiler.errors.CompilerUndefinedVariableError;
 
 import java.util.ArrayList;
 
@@ -29,7 +28,7 @@ final class Frame {
   }
 
   // Obtain a variable's respective frame field id and the list of sub-frames to get to it
-  FrameField getFrameField(String varId) throws CompilerException {
+  FrameField getFrameField(String varId) throws CompilerError {
     ArrayList<String> subFrameList = new ArrayList<>();
 
     Frame cFrame = this;
@@ -65,12 +64,12 @@ final class Frame {
     return fields.contains(varId);
   }
 
-  private String getField(String varId) throws CompilerException {
+  private String getField(String varId) throws CompilerError {
     for (int i = 0; i < fields.size(); i++) {
       if (fields.get(i).equals(varId))
         return "x" + i;
     }
 
-    throw new CompilerUndefinedVariableException(varId);
+    throw new CompilerUndefinedVariableError(varId);
   }
 }

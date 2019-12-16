@@ -1,8 +1,8 @@
 package compiler;
 
-import errors.compiler.FailedToDeleteFilesException;
-import errors.compiler.FileAlreadyExistsException;
-import errors.compiler.OutputFileWriteException;
+import compiler.errors.FailedToDeleteFilesError;
+import compiler.errors.FileAlreadyExistsError;
+import compiler.errors.OutputFileWriteError;
 
 import java.io.*;
 import java.util.HashSet;
@@ -33,20 +33,20 @@ class BufferedCompilerWriter extends BufferedWriter {
     lineCounter = 0;
   }
 
-  void writeBytecode(ByteCode byteCode, String params) throws OutputFileWriteException {
+  void writeBytecode(ByteCode byteCode, String params) throws OutputFileWriteError {
     writeLine(byteCode.toString() + " " + params, true);
     flush2();
   }
 
-  void writeBytecode(ByteCode byteCode) throws OutputFileWriteException {
+  void writeBytecode(ByteCode byteCode) throws OutputFileWriteError {
     writeBytecode(byteCode, "");
   }
 
-  void writeLine(String string) throws OutputFileWriteException {
+  void writeLine(String string) throws OutputFileWriteError {
     writeLine(string, false);
   }
 
-  void writeNewLine() throws OutputFileWriteException {
+  void writeNewLine() throws OutputFileWriteError {
     writeLine("");
   }
 
@@ -72,7 +72,7 @@ class BufferedCompilerWriter extends BufferedWriter {
      UTILS
   */
 
-  private void writeLine(String string, boolean tab) throws OutputFileWriteException {
+  private void writeLine(String string, boolean tab) throws OutputFileWriteError {
     if (!counterFlag) {
       write2(currentLine + ": " + (tab ? '\t' : "") + string);
       newLine2();
@@ -81,7 +81,7 @@ class BufferedCompilerWriter extends BufferedWriter {
       lineCounter++;
   }
 
-  void deleteFiles() throws FailedToDeleteFilesException {
+  void deleteFiles() throws FailedToDeleteFilesError {
     File file;
 
     // Close writer
@@ -93,26 +93,26 @@ class BufferedCompilerWriter extends BufferedWriter {
 
         // Try to delete file
         if (!file.delete())
-          throw new FailedToDeleteFilesException();
+          throw new FailedToDeleteFilesError();
       }
     } catch (IOException e) {
-      throw new FailedToDeleteFilesException();
+      throw new FailedToDeleteFilesError();
     }
   }
 
-  BufferedWriter createFrame(String frameId) throws OutputFileWriteException, FileAlreadyExistsException {
+  BufferedWriter createFrame(String frameId) throws OutputFileWriteError, FileAlreadyExistsError {
     try {
       String fileName = outputFolder + frameId + ".j";
       File outputFile = new File(fileName);
 
       if (fileSet.contains(fileName))
-        throw new FileAlreadyExistsException(frameId);
+        throw new FileAlreadyExistsError(frameId);
 
       fileSet.add(fileName);
 
       return new BufferedWriter(new FileWriter(outputFile));
     } catch (IOException e) {
-      throw new OutputFileWriteException(frameId + ".j");
+      throw new OutputFileWriteError(frameId + ".j");
     }
   }
 
@@ -120,35 +120,35 @@ class BufferedCompilerWriter extends BufferedWriter {
      OVERRIDES
   */
 
-  private void write2(String s) throws OutputFileWriteException {
+  private void write2(String s) throws OutputFileWriteError {
     try {
       super.write(s);
     } catch (IOException e) {
-      throw new OutputFileWriteException(outputFile);
+      throw new OutputFileWriteError(outputFile);
     }
   }
 
-  private void newLine2() throws OutputFileWriteException {
+  private void newLine2() throws OutputFileWriteError {
     try {
       super.newLine();
     } catch (IOException e) {
-      throw new OutputFileWriteException(outputFile);
+      throw new OutputFileWriteError(outputFile);
     }
   }
 
-  void flush2() throws OutputFileWriteException {
+  void flush2() throws OutputFileWriteError {
     try {
       super.flush();
     } catch (IOException e) {
-      throw new OutputFileWriteException(outputFile);
+      throw new OutputFileWriteError(outputFile);
     }
   }
 
-  void close2() throws OutputFileWriteException {
+  void close2() throws OutputFileWriteError {
     try {
       super.close();
     } catch (IOException e) {
-      throw new OutputFileWriteException(outputFile);
+      throw new OutputFileWriteError(outputFile);
     }
   }
 

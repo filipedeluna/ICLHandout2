@@ -1,6 +1,6 @@
 package compiler;
 
-import errors.compiler.*;
+import compiler.errors.*;
 import node.ASTNode;
 
 public final class Compiler {
@@ -11,7 +11,7 @@ public final class Compiler {
   // Temporary frame field "memory" register
   private String currentFieldId;
 
-  public Compiler() throws CompilerException {
+  public Compiler() throws CompilerError {
     this.compilerWriterHandler = new CompilerWriterHandler();
     this.frameIdCounter = 0;
 
@@ -20,15 +20,15 @@ public final class Compiler {
     currentFieldId = null;
   }
 
-  public void emit(ByteCode byteCode, String params) throws CompilerException {
+  public void emit(ByteCode byteCode, String params) throws CompilerError {
     compilerWriterHandler.write(byteCode, params);
   }
 
-  public void emit(ByteCode byteCode) throws CompilerException {
+  public void emit(ByteCode byteCode) throws CompilerError {
     compilerWriterHandler.write(byteCode);
   }
 
-  public void beginFrame() throws CompilerException {
+  public void beginFrame() throws CompilerError {
     String frameId = generateFrameId();
 
     if (currentFrame == null) {
@@ -40,16 +40,16 @@ public final class Compiler {
     }
   }
 
-  public void pushFrameField(String id) throws CompilerException {
+  public void pushFrameField(String id) throws CompilerError {
     if (currentFrame.getFrameField(id) == null)
-      throw new CompilerUndefinedVariableException(id);
+      throw new CompilerUndefinedVariableError(id);
 
     currentFieldId = id;
   }
 
-  public String popFrameField() throws CompilerException {
+  public String popFrameField() throws CompilerError {
     if (currentFieldId == null)
-      throw new EmptyCompilerRegisterException();
+      throw new EmptyCompilerRegisterError();
 
     String value = currentFieldId;
     currentFieldId = null;
@@ -57,26 +57,26 @@ public final class Compiler {
     return value;
   }
 
-  public void addFrameField(String id) throws CompilerException {
+  public void addFrameField(String id) throws CompilerError {
     if (currentFrame == null)
-      throw new VariableReferencingException(id);
+      throw new VariableReferencingError(id);
 
     if (currentFrame.hasField(id))
-      throw new CompilerDuplicateVariableException(id);
+      throw new CompilerDuplicateVariableError(id);
 
     String varIndex = currentFrame.addField(id);
     compilerWriterHandler.addFrameField(varIndex, currentFrame);
   }
 
-  public void updateFrameField(String id, ASTNode value) throws CompilerException {
+  public void updateFrameField(String id, ASTNode value) throws CompilerError {
 
     if (currentFrame == null)
-      throw new VariableReferencingException(id);
+      throw new VariableReferencingError(id);
 
     FrameField frameField = currentFrame.getFrameField(id);
 
     if (frameField == null)
-      throw new CompilerUndefinedVariableException(id);
+      throw new CompilerUndefinedVariableError(id);
 
     compilerWriterHandler.getFrameParentFields(frameField);
 
@@ -85,23 +85,23 @@ public final class Compiler {
     compilerWriterHandler.updateFrameField(frameField);
   }
 
-  public void getFrameField(String id) throws CompilerException {
+  public void getFrameField(String id) throws CompilerError {
     if (currentFrame == null)
-      throw new VariableReferencingException(id);
+      throw new VariableReferencingError(id);
 
     FrameField frameField = currentFrame.getFrameField(id);
 
     if (frameField == null)
-      throw new CompilerUndefinedVariableException(id);
+      throw new CompilerUndefinedVariableError(id);
 
     compilerWriterHandler.getFrameField(frameField);
   }
 
-  public void compare(ByteCode comparisonByteCode) throws OutputFileWriteException {
+  public void compare(ByteCode comparisonByteCode) throws OutputFileWriteError {
     compilerWriterHandler.compare(comparisonByteCode);
   }
 
-  public int countLines(ASTNode action) throws CompilerException {
+  public int countLines(ASTNode action) throws CompilerError {
     compilerWriterHandler.startLineCounter();
     action.compile(this);
     return compilerWriterHandler.endLineCounter();
@@ -111,20 +111,20 @@ public final class Compiler {
     return compilerWriterHandler.getCurrentLine();
   }
 
-  public void endFrame() throws CompilerException {
+  public void endFrame() throws CompilerError {
     compilerWriterHandler.endFrame(currentFrame);
     currentFrame = currentFrame.getParentFrame();
   }
 
-  public void loadStaticLink() throws CompilerException {
+  public void loadStaticLink() throws CompilerError {
     compilerWriterHandler.loadStaticLink();
   }
 
-  public void end() throws OutputFileWriteException {
+  public void end() throws OutputFileWriteError {
     compilerWriterHandler.close();
   }
 
-  public void deleteGeneratedFiles() throws FailedToDeleteFilesException {
+  public void deleteGeneratedFiles() throws FailedToDeleteFilesError {
     compilerWriterHandler.deleteGeneratedFiles();
   }
 

@@ -3,12 +3,12 @@ package node.block;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.interpreter.InterpreterException;
-import errors.interpreter.UnexpectedTypeException;
+import compiler.errors.CompilerError;
+import interpreter.errors.InterpreterError;
+import interpreter.errors.UnexpectedTypeError;
 import node.ASTNode;
-import value.IValue;
-import value.VBool;
+import values.IValue;
+import values.VBool;
 
 public final class ASTWhile implements ASTNode {
   private ASTNode condition;
@@ -20,7 +20,7 @@ public final class ASTWhile implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterException {
+  public IValue eval(Interpreter interpreter) throws InterpreterError {
     while (verifyCondition(interpreter, condition)) {
       action.eval(interpreter);
     }
@@ -29,7 +29,7 @@ public final class ASTWhile implements ASTNode {
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerException {
+  public void compile(Compiler compiler) throws CompilerError {
     int conditionStartLine = compiler.getCurrentLine();
     int actionLines = compiler.countLines(action);
 
@@ -47,11 +47,11 @@ public final class ASTWhile implements ASTNode {
     UTILS
   */
 
-  private boolean verifyCondition(Interpreter interpreter, ASTNode condition) throws InterpreterException {
+  private boolean verifyCondition(Interpreter interpreter, ASTNode condition) throws InterpreterError {
     IValue conditionResult = condition.eval(interpreter);
 
     if (!(conditionResult instanceof VBool))
-      throw new UnexpectedTypeException(conditionResult.typeToString(), "bool");
+      throw new UnexpectedTypeError(conditionResult.type(), "bool");
 
     return ((VBool) conditionResult).get();
   }

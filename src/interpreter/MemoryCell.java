@@ -1,6 +1,6 @@
 package interpreter;
 
-import value.IValue;
+import values.IValue;
 
 final class MemoryCell {
   private int references;

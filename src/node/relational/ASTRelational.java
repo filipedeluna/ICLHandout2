@@ -3,14 +3,14 @@ package node.relational;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.compiler.UndefinedOperationException;
-import errors.interpreter.InterpreterException;
-import errors.interpreter.IncompatibleTypesException;
+import compiler.errors.CompilerError;
+import compiler.errors.UndefinedOperationError;
+import interpreter.errors.InterpreterError;
+import interpreter.errors.IncompatibleTypesError;
 import node.ASTNode;
-import value.IValue;
-import value.VBool;
-import value.VInt;
+import values.IValue;
+import values.VBool;
+import values.VInt;
 
 public class ASTRelational implements ASTNode {
   private RelationalOperation operation;
@@ -24,7 +24,7 @@ public class ASTRelational implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterException {
+  public IValue eval(Interpreter interpreter) throws InterpreterError {
     IValue v1 = left.eval(interpreter);
     IValue v2 = right.eval(interpreter);
 
@@ -60,11 +60,11 @@ public class ASTRelational implements ASTNode {
       }
     }
 
-    throw new IncompatibleTypesException(operation.name(), v1, v2);
+    throw new IncompatibleTypesError(operation.name(), v1, v2);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerException {
+  public void compile(Compiler compiler) throws CompilerError {
     left.compile(compiler);
     right.compile(compiler);
 
@@ -88,7 +88,7 @@ public class ASTRelational implements ASTNode {
         compiler.compare(ByteCode.LESSER_OR_EQ);
         break;
       default:
-        throw new UndefinedOperationException(operation);
+        throw new UndefinedOperationError(operation);
     }
   }
 }

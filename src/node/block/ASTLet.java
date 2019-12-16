@@ -2,24 +2,24 @@ package node.block;
 
 import compiler.Compiler;
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.interpreter.InterpreterException;
+import compiler.errors.CompilerError;
+import interpreter.errors.InterpreterError;
 import node.ASTNode;
 import node.variable.ASTAssign;
-import value.IValue;
+import values.IValue;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 
 public class ASTLet implements ASTNode {
-  private HashSet<ASTAssign> assignments;
+  private ArrayList<ASTAssign> assignments;
   private ASTNode node;
 
-  public ASTLet(ASTNode node, HashSet<ASTAssign> assignments) {
+  public ASTLet(ASTNode node, ArrayList<ASTAssign> assignments) {
     this.node = node;
     this.assignments = assignments;
   }
 
-  public IValue eval(Interpreter interpreter) throws InterpreterException {
+  public IValue eval(Interpreter interpreter) throws InterpreterError {
     interpreter.beginEnvScope();
 
     for (ASTAssign assignment : assignments) {
@@ -34,7 +34,7 @@ public class ASTLet implements ASTNode {
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerException {
+  public void compile(Compiler compiler) throws CompilerError {
     compiler.beginFrame();
 
     for (ASTAssign assignment : assignments) {

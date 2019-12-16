@@ -3,12 +3,12 @@ package node.types;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.interpreter.InterpreterException;
-import errors.interpreter.UnexpectedTypeException;
+import compiler.errors.CompilerError;
+import interpreter.errors.InterpreterError;
+import interpreter.errors.UnexpectedTypeError;
 import node.ASTNode;
-import value.IValue;
-import value.VBool;
+import values.IValue;
+import values.VBool;
 
 public final class ASTBool implements ASTNode {
   private IValue val;
@@ -18,15 +18,15 @@ public final class ASTBool implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterException {
+  public IValue eval(Interpreter interpreter) throws InterpreterError {
     if (!(val instanceof VBool))
-      throw new UnexpectedTypeException(val.typeToString(), "bool");
+      throw new UnexpectedTypeError(val.type().toString(), "bool");
 
     return val;
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerException {
+  public void compile(Compiler compiler) throws CompilerError {
     boolean b = ((VBool) val).get();
 
     compiler.emit(ByteCode.PUSH, b ? "1" : "0");

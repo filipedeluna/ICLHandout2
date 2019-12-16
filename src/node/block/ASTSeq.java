@@ -2,10 +2,10 @@ package node.block;
 
 import compiler.Compiler;
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.interpreter.InterpreterException;
+import compiler.errors.CompilerError;
+import interpreter.errors.InterpreterError;
 import node.ASTNode;
-import value.IValue;
+import values.IValue;
 
 public class ASTSeq implements ASTNode {
   private ASTNode statement;
@@ -17,14 +17,14 @@ public class ASTSeq implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterException {
+  public IValue eval(Interpreter interpreter) throws InterpreterError {
     statement.eval(interpreter);
 
     return node.eval(interpreter);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerException {
+  public void compile(Compiler compiler) throws CompilerError {
     statement.compile(compiler);
 
     node.compile(compiler);

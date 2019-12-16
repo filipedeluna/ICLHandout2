@@ -1,9 +1,9 @@
 package interpreter;
 
-import errors.interpreter.InterpreterException;
-import errors.interpreter.OutsideOfScopeException;
-import errors.interpreter.VariableAlreadyDefinedException;
-import value.VCell;
+import interpreter.errors.InterpreterError;
+import interpreter.errors.OutsideOfScopeError;
+import interpreter.errors.VariableAlreadyDefinedError;
+import values.VCell;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -25,14 +25,14 @@ final class Environment {
     scopes.pop();
   }
 
-  void assign(String id, VCell cell) throws InterpreterException {
+  void assign(String id, VCell cell) throws InterpreterError {
     if (scopes.size() == 0 || scopes.peek() == null)
-      throw new OutsideOfScopeException(id);
+      throw new OutsideOfScopeError(id);
 
     HashMap<String, VCell> scope = scopes.peek();
 
     if (scope.get(id) != null)
-      throw new VariableAlreadyDefinedException(id);
+      throw new VariableAlreadyDefinedError(id);
 
     scope.put(id, cell);
   }

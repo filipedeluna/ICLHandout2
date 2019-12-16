@@ -3,12 +3,12 @@ package node.logical;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.interpreter.IncompatibleTypeException;
-import errors.interpreter.InterpreterException;
+import compiler.errors.CompilerError;
+import interpreter.errors.IncompatibleTypeError;
+import interpreter.errors.InterpreterError;
 import node.ASTNode;
-import value.IValue;
-import value.VBool;
+import values.IValue;
+import values.VBool;
 
 public class ASTComp implements ASTNode {
   private ASTNode node;
@@ -18,7 +18,7 @@ public class ASTComp implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterException {
+  public IValue eval(Interpreter interpreter) throws InterpreterError {
     IValue value = node.eval(interpreter);
 
     if (value instanceof VBool) {
@@ -27,11 +27,11 @@ public class ASTComp implements ASTNode {
       return new VBool(!b);
     }
 
-    throw new IncompatibleTypeException("complement", value);
+    throw new IncompatibleTypeError("complement", value);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerException {
+  public void compile(Compiler compiler) throws CompilerError {
     node.compile(compiler);
 
     compiler.emit(ByteCode.CONST_0);

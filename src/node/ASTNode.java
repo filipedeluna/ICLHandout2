@@ -1,14 +1,19 @@
 package node;
 
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.interpreter.InterpreterException;
+import compiler.errors.CompilerError;
+import interpreter.errors.InterpreterError;
 
 import compiler.Compiler;
-import value.IValue;
+import typechecker.TypeChecker;
+import typechecker.errors.TypeCheckError;
+import types.IType;
+import values.IValue;
 
 public interface ASTNode {
-  IValue eval(Interpreter interpreter) throws InterpreterException;
+  IValue eval(Interpreter interpreter) throws InterpreterError;
 
-  void compile(Compiler compiler) throws CompilerException;
+  void compile(Compiler compiler) throws CompilerError;
+
+  IType typeCheck(TypeChecker typeChecker) throws TypeCheckError;
 }

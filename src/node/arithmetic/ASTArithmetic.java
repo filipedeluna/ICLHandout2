@@ -3,14 +3,14 @@ package node.arithmetic;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.compiler.UndefinedOperationException;
-import errors.interpreter.DivideByZeroException;
-import errors.interpreter.IncompatibleTypesException;
-import errors.interpreter.InterpreterException;
+import compiler.errors.CompilerError;
+import compiler.errors.UndefinedOperationError;
+import interpreter.errors.DivideByZeroError;
+import interpreter.errors.IncompatibleTypesError;
+import interpreter.errors.InterpreterError;
 import node.ASTNode;
-import value.IValue;
-import value.VInt;
+import values.IValue;
+import values.VInt;
 
 public class ASTArithmetic implements ASTNode {
   private ArithmeticOperation operation;
@@ -24,7 +24,7 @@ public class ASTArithmetic implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterException {
+  public IValue eval(Interpreter interpreter) throws InterpreterError {
     IValue v1 = left.eval(interpreter);
     IValue v2 = right.eval(interpreter);
 
@@ -41,16 +41,16 @@ public class ASTArithmetic implements ASTNode {
           return new VInt(i1 * i2);
         case DIV:
           if (i2 == 0)
-            throw new DivideByZeroException();
+            throw new DivideByZeroError();
           return new VInt(i1 / i2);
       }
     }
 
-    throw new IncompatibleTypesException(operation.name(), v1, v2);
+    throw new IncompatibleTypesError(operation.name(), v1, v2);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerException {
+  public void compile(Compiler compiler) throws CompilerError {
     left.compile(compiler);
     right.compile(compiler);
 
@@ -68,7 +68,7 @@ public class ASTArithmetic implements ASTNode {
         compiler.emit(ByteCode.DIV);
         break;
       default:
-        throw new UndefinedOperationException(operation);
+        throw new UndefinedOperationError(operation);
     }
   }
 }

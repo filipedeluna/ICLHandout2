@@ -3,13 +3,13 @@ package node.logical;
 import compiler.ByteCode;
 import compiler.Compiler;
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.compiler.UndefinedOperationException;
-import errors.interpreter.InterpreterException;
-import errors.interpreter.IncompatibleTypesException;
+import compiler.errors.CompilerError;
+import compiler.errors.UndefinedOperationError;
+import interpreter.errors.InterpreterError;
+import interpreter.errors.IncompatibleTypesError;
 import node.ASTNode;
-import value.IValue;
-import value.VBool;
+import values.IValue;
+import values.VBool;
 
 public class ASTLogical implements ASTNode {
   private LogicalOperation operation;
@@ -24,7 +24,7 @@ public class ASTLogical implements ASTNode {
 
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterException {
+  public IValue eval(Interpreter interpreter) throws InterpreterError {
     IValue v1 = left.eval(interpreter);
     IValue v2 = right.eval(interpreter);
 
@@ -40,11 +40,11 @@ public class ASTLogical implements ASTNode {
       }
     }
 
-    throw new IncompatibleTypesException(operation.name(), v1, v2);
+    throw new IncompatibleTypesError(operation.name(), v1, v2);
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerException {
+  public void compile(Compiler compiler) throws CompilerError {
     left.compile(compiler);
     right.compile(compiler);
 
@@ -56,7 +56,7 @@ public class ASTLogical implements ASTNode {
         compiler.emit(ByteCode.OR);
         break;
       default:
-        throw new UndefinedOperationException(operation);
+        throw new UndefinedOperationError(operation);
     }
   }
 }

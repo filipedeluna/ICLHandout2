@@ -1,9 +1,9 @@
 package compiler;
 
-import errors.compiler.CompilerException;
-import errors.compiler.FailedToDeleteFilesException;
-import errors.compiler.FileAlreadyExistsException;
-import errors.compiler.OutputFileWriteException;
+import compiler.errors.CompilerError;
+import compiler.errors.FailedToDeleteFilesError;
+import compiler.errors.FileAlreadyExistsError;
+import compiler.errors.OutputFileWriteError;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -20,29 +20,29 @@ final class CompilerWriterHandler {
 
   private BufferedCompilerWriter writer;
 
-  CompilerWriterHandler() throws CompilerException {
+  CompilerWriterHandler() throws CompilerError {
     try {
       writer = new BufferedCompilerWriter(DEFAULT_OUTPUT_FILE, DEFAULT_OUTPUT_FOLDER);
 
       writeHeader();
     } catch (IOException e) {
-      throw new OutputFileWriteException(DEFAULT_OUTPUT_FILE);
+      throw new OutputFileWriteError(DEFAULT_OUTPUT_FILE);
     }
   }
 
-  void write(ByteCode byteCode, String params) throws OutputFileWriteException {
+  void write(ByteCode byteCode, String params) throws OutputFileWriteError {
     writer.writeBytecode(byteCode, params);
   }
 
-  void write(ByteCode byteCode) throws OutputFileWriteException {
+  void write(ByteCode byteCode) throws OutputFileWriteError {
     writer.writeBytecode(byteCode);
   }
 
-  void loadStaticLink() throws OutputFileWriteException {
+  void loadStaticLink() throws OutputFileWriteError {
     writer.writeBytecode(ByteCode.LOAD, DEFAULT_STATIC_LINK);
   }
 
-  void beginFrame(Frame frame) throws CompilerException {
+  void beginFrame(Frame frame) throws CompilerError {
     String frameId = frame.getFrameId();
 
     // create frame
@@ -62,7 +62,7 @@ final class CompilerWriterHandler {
     createFrameClassFile(frameId, null);
   }
 
-  void beginSubFrame(Frame frame) throws CompilerException {
+  void beginSubFrame(Frame frame) throws CompilerError {
     String frameId = frame.getFrameId();
     String parentFrameId = frame.getParentFrame().getFrameId();
 
@@ -84,7 +84,7 @@ final class CompilerWriterHandler {
     createFrameClassFile(frameId, parentFrameId);
   }
 
-  void endFrame(Frame frame) throws CompilerException {
+  void endFrame(Frame frame) throws CompilerError {
     String frameId = frame.getFrameId();
 
     writer.writeLine("");
@@ -100,13 +100,13 @@ final class CompilerWriterHandler {
     writer.writeBytecode(ByteCode.STORE, DEFAULT_STATIC_LINK);
   }
 
-  void addFrameField(String varIndex, Frame frame) throws CompilerException {
+  void addFrameField(String varIndex, Frame frame) throws CompilerError {
     String frameId = frame.getFrameId();
 
     writer.writeBytecode(ByteCode.PUT_FIELD, frameId + '/' + varIndex + " I");
   }
 
-  void getFrameParentFields(FrameField frameField) throws CompilerException {
+  void getFrameParentFields(FrameField frameField) throws CompilerError {
     ArrayList<String> subFrames = frameField.getFrameList();
 
     int i = 0;
@@ -117,7 +117,7 @@ final class CompilerWriterHandler {
     }
   }
 
-  void getFrameField(FrameField frameField) throws CompilerException {
+  void getFrameField(FrameField frameField) throws CompilerError {
     ArrayList<String> subFrames = frameField.getFrameList();
     String fieldId = frameField.getFieldId();
 
@@ -129,14 +129,14 @@ final class CompilerWriterHandler {
     writer.writeBytecode(ByteCode.GET_FIELD, subFrames.get(subFrames.size() - 1) + '/' + fieldId + " I");
   }
 
-  void updateFrameField(FrameField frameField) throws CompilerException {
+  void updateFrameField(FrameField frameField) throws CompilerError {
     ArrayList<String> subFrames = frameField.getFrameList();
     String fieldId = frameField.getFieldId();
 
     writer.writeBytecode(ByteCode.PUT_FIELD, subFrames.get(subFrames.size() - 1) + '/' + fieldId + " I");
   }
 
-  void compare(ByteCode comparisonByteCode) throws OutputFileWriteException {
+  void compare(ByteCode comparisonByteCode) throws OutputFileWriteError {
     int currentLine = writer.getCurrentLine();
 
     writer.writeBytecode(comparisonByteCode, String.valueOf(currentLine + 3));
@@ -157,12 +157,12 @@ final class CompilerWriterHandler {
     return writer.endLineCounter();
   }
 
-  void close() throws OutputFileWriteException {
+  void close() throws OutputFileWriteError {
     writeFooter();
     writer.close2();
   }
 
-  void deleteGeneratedFiles() throws FailedToDeleteFilesException {
+  void deleteGeneratedFiles() throws FailedToDeleteFilesError {
     writer.deleteFiles();
   }
 
@@ -175,7 +175,7 @@ final class CompilerWriterHandler {
     bufferedWriter.newLine();
   }
 
-  private void createFrameClassFile(String frameId, String parentFrame) throws OutputFileWriteException, FileAlreadyExistsException {
+  private void createFrameClassFile(String frameId, String parentFrame) throws OutputFileWriteError, FileAlreadyExistsError {
     try {
       BufferedWriter frameWriter = writer.createFrame(frameId);
       String staticLink;
@@ -201,11 +201,11 @@ final class CompilerWriterHandler {
 
       frameWriter.close();
     } catch (IOException e) {
-      throw new OutputFileWriteException(frameId + ".j");
+      throw new OutputFileWriteError(frameId + ".j");
     }
   }
 
-  private void writeHeader() throws OutputFileWriteException {
+  private void writeHeader() throws OutputFileWriteError {
     writer.writeLine(".class public Main");
     writer.writeLine(".super java/lang/Object");
 
@@ -235,7 +235,7 @@ final class CompilerWriterHandler {
     writer.flush2();
   }
 
-  private void writeFooter() throws OutputFileWriteException {
+  private void writeFooter() throws OutputFileWriteError {
     writer.writeLine("");
 
     writer.writeLine('\t' + "invokestatic java/lang/String/valueOf(I)Ljava/lang/String;");

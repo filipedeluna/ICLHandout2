@@ -2,10 +2,10 @@ package node.variable;
 
 import compiler.Compiler;
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.interpreter.InterpreterException;
+import compiler.errors.CompilerError;
+import interpreter.errors.InterpreterError;
 import node.ASTNode;
-import value.IValue;
+import values.IValue;
 
 public class ASTApply implements ASTNode {
   private ASTNode ref;
@@ -17,7 +17,7 @@ public class ASTApply implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterException {
+  public IValue eval(Interpreter interpreter) throws InterpreterError {
     IValue iref = ref.eval(interpreter);
     IValue ival = value.eval(interpreter);
 
@@ -27,7 +27,7 @@ public class ASTApply implements ASTNode {
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerException {
+  public void compile(Compiler compiler) throws CompilerError {
     compiler.loadStaticLink();
 
     ref.compile(compiler);

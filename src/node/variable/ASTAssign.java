@@ -2,10 +2,13 @@ package node.variable;
 
 import compiler.Compiler;
 import interpreter.Interpreter;
-import errors.compiler.CompilerException;
-import errors.interpreter.InterpreterException;
+import compiler.errors.CompilerError;
+import interpreter.errors.InterpreterError;
 import node.ASTNode;
-import value.IValue;
+import typechecker.TypeChecker;
+import typechecker.errors.TypeCheckError;
+import types.IType;
+import values.IValue;
 
 public class ASTAssign implements ASTNode {
   private String id;
@@ -17,7 +20,7 @@ public class ASTAssign implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpreterException {
+  public IValue eval(Interpreter interpreter) throws InterpreterError {
     IValue iv = value.eval(interpreter);
 
     interpreter.assign(id, iv);
@@ -26,11 +29,16 @@ public class ASTAssign implements ASTNode {
   }
 
   @Override
-  public void compile(Compiler compiler) throws CompilerException {
+  public void compile(Compiler compiler) throws CompilerError {
     compiler.loadStaticLink();
 
     value.compile(compiler);
 
     compiler.addFrameField(id);
+  }
+
+  @Override
+  public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
+    return null;
   }
 }

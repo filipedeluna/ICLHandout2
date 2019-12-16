@@ -1,8 +1,11 @@
 package interpreter;
 
-import errors.interpreter.*;
-import value.IValue;
-import value.VCell;
+import interpreter.errors.CellNotFoundError;
+import interpreter.errors.InterpreterError;
+import interpreter.errors.InterpreterUndefinedVariableError;
+import interpreter.errors.UnexpectedTypeError;
+import values.IValue;
+import values.VCell;
 
 import java.util.HashSet;
 
@@ -19,53 +22,53 @@ public class Interpreter {
     environment.beginScope();
   }
 
-  public void endEnvScope() throws CellNotFoundInMemoryException {
+  public void endEnvScope() throws CellNotFoundError {
     HashSet<VCell> cells = environment.currentScopeCells();
 
     for (VCell cell : cells) {
-      memory.removeCellReference(cell.getAddress());
+      memory.removeCellReference(cell.get());
     }
 
     environment.endScope();
   }
 
-  public void assign(String id, IValue value) throws InterpreterException {
+  public void assign(String id, IValue value) throws InterpreterError {
     if (!(value instanceof VCell))
-      throw new UnexpectedTypeException(value.typeToString(), "cell");
+      throw new UnexpectedTypeError(value.type(), "cell");
 
     environment.assign(id, ((VCell) value));
   }
 
-  public void apply(IValue ref, IValue newValue) throws InterpreterException {
+  public void apply(IValue ref, IValue newValue) throws InterpreterError {
     if (!(ref instanceof VCell))
-      throw new UnexpectedTypeException(ref.typeToString(), "cell");
+      throw new UnexpectedTypeError(ref.type(), "cell");
 
-    memory.changeCellValue(((VCell) ref).getAddress(), newValue);
+    memory.changeCellValue(((VCell) ref).get(), newValue);
   }
 
-  public IValue deref(String id) throws InterpreterException {
+  public IValue deref(String id) throws InterpreterError {
     VCell value = environment.find(id);
 
     if (value == null)
-      throw new UndefinedVariableException(id);
+      throw new InterpreterUndefinedVariableError(id);
 
-    return memory.getCellValue(value.getAddress());
+    return memory.getCellValue(value.get());
   }
 
-  public VCell init(IValue value) throws InterpreterException {
+  public VCell init(IValue value) throws InterpreterError {
     if (value instanceof VCell)
-      throw new UnexpectedTypeException(value.typeToString(), "bool or int");
+      throw new UnexpectedTypeError(value.type(), "bool or int");
 
     int address = memory.addCell(value);
 
     return new VCell(address);
   }
 
-  public VCell find(String id) throws InterpreterException {
+  public VCell find(String id) throws InterpreterError {
     VCell value = environment.find(id);
 
     if (value == null)
-      throw new UndefinedVariableException(id);
+      throw new InterpreterUndefinedVariableError(id);
 
     return value;
   }
