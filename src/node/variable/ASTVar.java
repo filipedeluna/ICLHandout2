@@ -8,6 +8,7 @@ import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
 import types.IType;
+import types.TCell;
 import values.IValue;
 
 public final class ASTVar implements ASTNode {
@@ -29,6 +30,6 @@ public final class ASTVar implements ASTNode {
 
   @Override
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
-    return null;
+    return new TCell(id);
   }
 }

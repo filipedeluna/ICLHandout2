@@ -1,40 +1,36 @@
-package node.types;
+package node.variable;
 
+import compiler.ByteCode;
 import compiler.Compiler;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
+import interpreter.errors.UnexpectedTypeError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
 import types.IType;
 import values.IValue;
+import values.VInt;
 
-public class ASTStruct implements ASTNode {
-  private String id;
-  private IType type;
+public final class ASTStructDeref implements ASTNode {
+  private IValue val;
 
-  public ASTStruct(IValue value)  {
-    this.id = id;
-
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public IType getType() {
-    return type;
+  public ASTStructDeref(String structId, String fieldId) {
+    this.val = val;
   }
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpretationError {
-    return null;
+    if (!(val instanceof VInt))
+      throw new UnexpectedTypeError(val.type().toString(), "int");
+
+    return val;
   }
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-
+    compiler.emit(ByteCode.PUSH, String.valueOf(val));
   }
 
   @Override

@@ -8,6 +8,7 @@ import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
 import types.IType;
+import types.TVoid;
 import values.IValue;
 
 public class ASTAssign implements ASTNode {
@@ -39,6 +40,13 @@ public class ASTAssign implements ASTNode {
 
   @Override
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
-    return null;
+    IType type = value.typeCheck(typeChecker);
+
+    if (type instanceof TVoid)
+      throw new TypeCheckError("Value expected", "assign");
+
+    typeChecker.assign(id, type);
+
+    return TVoid.SINGLETON;
   }
 }

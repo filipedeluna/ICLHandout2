@@ -3,7 +3,17 @@ package types;
 public final class TCell implements IType {
   public final static TCell SINGLETON = new TCell();
 
-  public TCell() {
+  private String id;
+
+  private TCell() {
+  }
+
+  public TCell(String id) {
+    this.id = id;
+  }
+
+  public String getId() {
+    return id;
   }
 
   @Override

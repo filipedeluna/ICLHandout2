@@ -1,4 +1,4 @@
-package node.types;
+package node.instruction;
 
 import compiler.ByteCode;
 import compiler.Compiler;
@@ -13,10 +13,20 @@ import types.IType;
 import values.IValue;
 import values.VInt;
 
-public final class ASTStructDeref implements ASTNode {
+import java.util.ArrayList;
+
+public final class ASTFunCall implements ASTNode {
   private IValue val;
 
-  public ASTStructDeref(String structId, String fieldId) {
+  public ASTFunCall(ASTNode function, ArrayList<ASTNode> funcParams) {
+
+  }
+
+  public ASTFunCall(ASTNode function) {
+
+  }
+
+  public ASTFunCall(IValue val) {
     this.val = val;
   }
 

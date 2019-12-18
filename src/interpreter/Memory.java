@@ -1,7 +1,6 @@
 package interpreter;
 
-import interpreter.errors.MemoryCorruptionError;
-import interpreter.errors.CellNotFoundError;
+import interpreter.errors.InterpretationError;
 import values.IValue;
 import values.VCell;
 
@@ -16,7 +15,7 @@ class Memory {
     addressCounter = 0;
   }
 
-  int addCell(IValue value) throws CellNotFoundError {
+  int addCell(IValue value) throws InterpretationError {
     if (value instanceof VCell) {
       int cellRefAddress = ((VCell) value).get();
       addCellReference(cellRefAddress);
@@ -28,13 +27,13 @@ class Memory {
   }
 
   // Recursively obtain memory value because cells can point to other cells
-  IValue getCellValue(int address) throws CellNotFoundError, MemoryCorruptionError {
+  IValue getCellValue(int address) throws InterpretationError {
     MemoryCell cell = getCell(address);
 
     IValue value = cell.getValue();
 
     if (value == null)
-      throw new MemoryCorruptionError();
+      throw new InterpretationError("Memory reference is corrupted", "get value from memory");
 
     if (value instanceof VCell)
       value = getCellValue(((VCell) value).get());
@@ -42,7 +41,7 @@ class Memory {
     return value;
   }
 
-  void changeCellValue(int address, IValue value) throws CellNotFoundError {
+  void changeCellValue(int address, IValue value) throws InterpretationError {
     MemoryCell oldCell = getCell(address);
 
     memory.remove(address);
@@ -58,7 +57,7 @@ class Memory {
       addCellReference(((VCell) value).get());
   }
 
-  void addCellReference(int address) throws CellNotFoundError {
+  void addCellReference(int address) throws InterpretationError {
     MemoryCell oldCell = getCell(address);
 
     oldCell.incReferences();
@@ -66,7 +65,7 @@ class Memory {
     memory.put(address, new MemoryCell(oldCell));
   }
 
-  void removeCellReference(int address) throws CellNotFoundError {
+  void removeCellReference(int address) throws InterpretationError {
     MemoryCell oldCell = getCell(address);
 
     oldCell.decReferences();
@@ -80,11 +79,11 @@ class Memory {
   /*
     UTILS
   */
-  private MemoryCell getCell(int address) throws CellNotFoundError {
+  private MemoryCell getCell(int address) throws InterpretationError {
     MemoryCell cell = memory.get(address);
 
     if (cell == null)
-      throw new CellNotFoundError();
+      throw new InterpretationError("Memory reference not found", "get reference from memory");
 
     return cell;
   }

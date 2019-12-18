@@ -16,7 +16,6 @@ public final class Compiler {
     this.frameIdCounter = 0;
 
     currentFrame = null;
-
     currentFieldId = null;
   }
 

@@ -1,8 +1,6 @@
 package interpreter;
 
 import interpreter.errors.InterpretationError;
-import interpreter.errors.OutsideOfScopeError;
-import interpreter.errors.VariableAlreadyDefinedError;
 import values.VCell;
 
 import java.util.ArrayDeque;
@@ -27,23 +25,23 @@ final class Environment {
 
   void assign(String id, VCell cell) throws InterpretationError {
     if (scopes.size() == 0 || scopes.peek() == null)
-      throw new OutsideOfScopeError(id);
+      throw new InterpretationError("Outside of scope", "variable assignment");
 
     HashMap<String, VCell> scope = scopes.peek();
 
     if (scope.get(id) != null)
-      throw new VariableAlreadyDefinedError(id);
+      throw new InterpretationError("Variable " + id + " already assigned", "variable assignment");
 
     scope.put(id, cell);
   }
 
-  VCell find(String id) {
+  VCell find(String id) throws InterpretationError {
     for (HashMap<String, VCell> scope : scopes) {
       if (scope.get(id) != null)
         return scope.get(id);
     }
 
-    return null;
+    throw new InterpretationError("Variable " + id + " is not defined", "variable lookup");
   }
 
   // Return all the values from current scope whose

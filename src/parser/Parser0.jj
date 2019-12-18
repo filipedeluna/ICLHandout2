@@ -307,7 +307,7 @@ ASTNode Lit() :
     IValue v;
 }
 {
-    t = <Num> { return new ASTNum(new VInt(Integer.parseInt(t.image))); }
+    t = <Num> { return new ASTInt(new VInt(Integer.parseInt(t.image))); }
     | t = <BOOL> { return new ASTBool(new VBool(Boolean.parseBoolean(t.image))); }
     | <QUOTE> t = <STRING> { return new ASTString(new VString(t.image)); } <QUOTE>
 }
@@ -324,7 +324,7 @@ ASTNode Decl() :
 
     (
         t = <Id> <COLON> (
-            ( <REFTYPE> type = Singleton() <EQ> n = Init() { n = new ASTRef(type, n); } )
+            ( <REFTYPE> type = Singleton() <EQ> n = Init() )
             | type = FunType() <EQ> n = Init() { n = new ASTFun(type, n); }
         )
         { assignments.add(new ASTAssign(t.image, n)); }

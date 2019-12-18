@@ -51,9 +51,11 @@ public class ASTLet implements ASTNode {
 
   @Override
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
-    // TODO must check scopes and etc here
-    // TODO typechecker frames
-    // TOdO overrides everywhere
+    typeChecker.beginEnvScope();
+
+    node.typeCheck(typeChecker);
+
+    typeChecker.endEnvScope();
 
     return node.typeCheck(typeChecker);
   }

@@ -29,6 +29,6 @@ public class ASTDeref implements ASTNode {
 
   @Override
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
-    return null;
+    return typeChecker.find(id);
   }
 }

@@ -1,10 +1,9 @@
-package node.types;
+package node.variable;
 
-import compiler.ByteCode;
 import compiler.Compiler;
-import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
+import interpreter.Interpreter;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
@@ -13,11 +12,14 @@ import types.TBool;
 import values.IValue;
 import values.VBool;
 
-public final class ASTBool implements ASTNode {
-  private IValue val;
+import java.util.ArrayList;
 
-  public ASTBool(IValue val) {
-    this.val = val;
+public final class ASTFun implements ASTNode {
+  private ArrayList<IType> paramTypes;
+  private String node;
+
+  public ASTFun(ArrayList<IType> paramTypes, ASTNode node) {
+    this.node = node;
   }
 
   @Override
@@ -26,13 +28,14 @@ public final class ASTBool implements ASTNode {
       throw new InterpretationError("Unexpected value type", "cast to bool", val.type());
 
     return val;
+
+    return interpreter.find(id);
   }
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    boolean b = ((VBool) val).get();
-
-    compiler.emit(ByteCode.PUSH, b ? "1" : "0");
+    // TODO add function to frame and write it to the file
+    compiler.pushFrameField(id);
   }
 
   @Override

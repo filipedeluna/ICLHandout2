@@ -1,46 +1,40 @@
-package node.types;
+package node.variable;
 
-import compiler.ByteCode;
 import compiler.Compiler;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
-import interpreter.errors.UnexpectedTypeError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
 import types.IType;
 import values.IValue;
-import values.VInt;
 
-import java.util.ArrayList;
+public class ASTStruct implements ASTNode {
+  private String id;
+  private IType type;
 
-public final class ASTFunCall implements ASTNode {
-  private IValue val;
-
-  public ASTFunCall(ASTNode function, ArrayList<ASTNode> funcParams) {
-
-  }
-
-  public ASTFunCall(ASTNode function) {
+  public ASTStruct(IValue value)  {
+    this.id = id;
 
   }
 
-  public ASTFunCall(IValue val) {
-    this.val = val;
+  public String getId() {
+    return id;
+  }
+
+  public IType getType() {
+    return type;
   }
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpretationError {
-    if (!(val instanceof VInt))
-      throw new UnexpectedTypeError(val.type().toString(), "int");
-
-    return val;
+    return null;
   }
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    compiler.emit(ByteCode.PUSH, String.valueOf(val));
+
   }
 
   @Override
