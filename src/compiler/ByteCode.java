@@ -12,6 +12,7 @@ public enum ByteCode {
   XOR("ixor"),
 
   PUSH("sipush"),
+  LOAD_C("ldc"),
   DUP("dup"),
   STORE("astore"),
   LOAD("aload"),

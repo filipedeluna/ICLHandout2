@@ -1,9 +1,6 @@
 package compiler;
 
 import compiler.errors.CompileError;
-import compiler.errors.FailedToDeleteFilesError;
-import compiler.errors.FileAlreadyExistsError;
-import compiler.errors.OutputFileWriteError;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -26,19 +23,19 @@ final class CompilerWriterHandler {
 
       writeHeader();
     } catch (IOException e) {
-      throw new OutputFileWriteError(DEFAULT_OUTPUT_FILE);
+      throw new CompileError("Failed to write to file " + DEFAULT_OUTPUT_FILE, "create main program file");
     }
   }
 
-  void write(ByteCode byteCode, String params) throws OutputFileWriteError {
+  void write(ByteCode byteCode, String params) throws CompileError {
     writer.writeBytecode(byteCode, params);
   }
 
-  void write(ByteCode byteCode) throws OutputFileWriteError {
+  void write(ByteCode byteCode) throws CompileError {
     writer.writeBytecode(byteCode);
   }
 
-  void loadStaticLink() throws OutputFileWriteError {
+  void loadStaticLink() throws CompileError {
     writer.writeBytecode(ByteCode.LOAD, DEFAULT_STATIC_LINK);
   }
 
@@ -98,6 +95,8 @@ final class CompilerWriterHandler {
       writer.writeBytecode(ByteCode.GET_FIELD, frameId + "/sl Ljava/lang/Object;");
 
     writer.writeBytecode(ByteCode.STORE, DEFAULT_STATIC_LINK);
+
+    closeFrameClassFile(frameId);
   }
 
   void addFrameField(String varIndex, Frame frame) throws CompileError {
@@ -136,17 +135,19 @@ final class CompilerWriterHandler {
     writer.writeBytecode(ByteCode.PUT_FIELD, subFrames.get(subFrames.size() - 1) + '/' + fieldId + " I");
   }
 
-  void compare(ByteCode comparisonByteCode) throws OutputFileWriteError {
-    int currentLine = writer.getCurrentLine();
-
-    writer.writeBytecode(comparisonByteCode, String.valueOf(currentLine + 3));
+  void compare(ByteCode comparisonByteCode) throws CompileError {
+    writer.writeBytecode(comparisonByteCode, getCurrentLineOffset(3));
     writer.writeBytecode(ByteCode.CONST_0);
-    writer.writeBytecode(ByteCode.GOTO, String.valueOf(currentLine + 4));
+    writer.writeBytecode(ByteCode.GOTO, getCurrentLineOffset(4));
     writer.writeBytecode(ByteCode.CONST_1);
   }
 
   int getCurrentLine() {
     return writer.getCurrentLine();
+  }
+
+  String getCurrentLineOffset(int offset) {
+    return writer.getCurrentLineOffset(offset);
   }
 
   void startLineCounter() {
@@ -157,13 +158,25 @@ final class CompilerWriterHandler {
     return writer.endLineCounter();
   }
 
-  void close() throws OutputFileWriteError {
+  void close() throws CompileError {
     writeFooter();
     writer.close2();
   }
 
-  void deleteGeneratedFiles() throws FailedToDeleteFilesError {
+  void deleteGeneratedFiles() throws CompileError {
     writer.deleteFiles();
+  }
+
+  void addFieldToFrameClassFile(String frameId, String fieldId, String fieldType) throws CompileError {
+    try {
+      BufferedWriter frameWriter = writer.getWriter(frameId);
+
+      writeFrameLine(frameWriter, ".field public x" + fieldId + " " + fieldType);
+
+      frameWriter.close();
+    } catch (IOException e) {
+      throw new CompileError("Failed to write to file " + frameId + ".j", "create frame file");
+    }
   }
 
   /*
@@ -175,9 +188,10 @@ final class CompilerWriterHandler {
     bufferedWriter.newLine();
   }
 
-  private void createFrameClassFile(String frameId, String parentFrame) throws OutputFileWriteError, FileAlreadyExistsError {
+  private void createFrameClassFile(String frameId, String parentFrame) throws CompileError {
     try {
-      BufferedWriter frameWriter = writer.createFrame(frameId);
+      BufferedWriter frameWriter = writer.getWriter(frameId);
+
       String staticLink;
 
       // Format static link
@@ -193,6 +207,18 @@ final class CompilerWriterHandler {
 
       writeFrameLine(frameWriter, "");
 
+      frameWriter.close();
+    } catch (IOException e) {
+      throw new CompileError("Failed to write to file " + frameId + ".j", "create frame file");
+    }
+  }
+
+  private void closeFrameClassFile(String frameId) throws CompileError {
+    try {
+      BufferedWriter frameWriter = writer.getWriter(frameId);
+
+      writeFrameLine(frameWriter, "");
+
       writeFrameLine(frameWriter, ".method public <init>()V");
       writeFrameLine(frameWriter, '\t' + "aload_0");
       writeFrameLine(frameWriter, '\t' + "invokenonvirtual java/lang/Object/<init>()V");
@@ -201,11 +227,11 @@ final class CompilerWriterHandler {
 
       frameWriter.close();
     } catch (IOException e) {
-      throw new OutputFileWriteError(frameId + ".j");
+      throw new CompileError("Failed to write to file " + frameId + ".j", "create frame file");
     }
   }
 
-  private void writeHeader() throws OutputFileWriteError {
+  private void writeHeader() throws CompileError {
     writer.writeLine(".class public Main");
     writer.writeLine(".super java/lang/Object");
 
@@ -235,7 +261,7 @@ final class CompilerWriterHandler {
     writer.flush2();
   }
 
-  private void writeFooter() throws OutputFileWriteError {
+  private void writeFooter() throws CompileError {
     writer.writeLine("");
 
     writer.writeLine('\t' + "invokestatic java/lang/String/valueOf(I)Ljava/lang/String;");

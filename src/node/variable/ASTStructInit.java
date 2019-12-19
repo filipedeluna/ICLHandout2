@@ -1,36 +1,37 @@
 package node.variable;
 
-import compiler.ByteCode;
 import compiler.Compiler;
-import interpreter.Interpreter;
 import compiler.errors.CompileError;
+import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
 import types.IType;
 import types.TCell;
-import types.TFun;
 import types.TStruct;
 import values.*;
 
-public class ASTInit implements ASTNode {
-  private IValue value;
+public class ASTStructInit implements ASTNode {
+  private ASTNode node;
 
-  public ASTInit(IValue value) {
-    this.value = value;
+  public ASTStructInit(ASTNode node) {
+    this.node = node;
   }
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpretationError {
-    if (value instanceof VFun || value instanceof VCell || value instanceof VStruct)
-      throw new InterpretationError("Invalid value type", "variable initialization", value.type());
+    IValue value = node.eval(interpreter);
+
+    if (!(value instanceof VStruct))
+      throw new InterpretationError("Invalid value type", "struct variable initialization");
 
     return interpreter.init(value);
   }
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
+    /*
     if (value instanceof VInt || value instanceof VBool) {
       compiler.emit(ByteCode.PUSH, value.asString());
       return;
@@ -44,14 +45,17 @@ public class ASTInit implements ASTNode {
     compiler.pushTempValue(value);
 
     throw new CompileError("Invalid value type", "variable initialization");
+    */
   }
 
   @Override
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
-    if (value.type() instanceof TFun || value.type() instanceof TCell || value.type() instanceof TStruct)
-      throw new TypeCheckError("Invalid type", "variable initialization", value.type());
+    IType type = node.typeCheck(typeChecker);
 
-    typeChecker.loadTempType(value.type());
+    if (!(type instanceof TStruct))
+      throw new TypeCheckError("Invalid type, expected struct", "struct variable initialization", type);
+
+    typeChecker.loadTempType(type);
 
     return TCell.SINGLETON;
   }

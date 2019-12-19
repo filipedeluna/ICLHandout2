@@ -1,44 +1,72 @@
 package values;
 
-import node.ASTNode;
-import node.types.ASTStructParam;
-import types.TFun;
 import types.IType;
+import types.TStruct;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 public final class VStruct implements IValue {
-  private TFun type;
-  private LinkedHashMap<String, IValue> parameters;
-  private ASTNode block;
+  HashMap<String, IValue> values;
 
-  public VStruct(ArrayList<ASTStructParam> parameters) {
-    this.block = block;
+  public VStruct() {
+    values = new HashMap<>();
+  }
 
-    // Build types for type variable
-    ArrayList<IType> functionParamTypes = new ArrayList<>();
-    for (IValue value : parameters.values())
-      functionParamTypes.add(value.type());
+  public void put(String id, IValue value) {
+    values.put(id, value);
+  }
 
-    type = new TFun(functionParamTypes);
+  public IValue get(String id) {
+    return values.get(id);
+  }
+
+  public boolean contains(String id) {
+    return values.containsKey(id);
+  }
+
+  public boolean merge(VStruct struct) {
+    HashMap<String, IValue> secondaryValues = struct.getFields();
+
+    for (Entry<String, IValue> entry : secondaryValues.entrySet()) {
+      if (values.containsKey(entry.getKey()))
+        return false;
+
+      values.put(entry.getKey(), entry.getValue());
+    }
+
+    return true;
+  }
+
+  public HashMap<String, IValue> getFields() {
+    return values;
   }
 
   @Override
   public boolean equals(IValue value) {
-    return false;
+    return value instanceof VStruct;
   }
 
   public IType type() {
-    return type;
+    return TStruct.SINGLETON;
   }
 
   @Override
   public String asString() {
-    return type.name();
-  }
+    StringBuilder stringBuilder = new StringBuilder();
 
-  public boolean equals(TFun function) {
-    return function.equals(function);
+    stringBuilder.append("{ ");
+
+    for (Entry<String, IValue> parameter : values.entrySet()) {
+      stringBuilder
+          .append(parameter.getKey())
+          .append("=")
+          .append(parameter.getValue().asString())
+          .append(" ");
+    }
+
+    stringBuilder.append("}");
+
+    return stringBuilder.toString();
   }
 }

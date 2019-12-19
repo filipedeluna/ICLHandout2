@@ -1,6 +1,6 @@
 package types;
 
-public final class TCell implements IType {
+public class TCell implements IType {
   public final static TCell SINGLETON = new TCell();
 
   private String id;

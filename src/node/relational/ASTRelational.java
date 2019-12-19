@@ -66,8 +66,8 @@ public class ASTRelational implements ASTNode {
     }
 
     if (v1 instanceof VString && v2 instanceof VString) {
-      String s1 = ((VString) v1).get();
-      String s2 = ((VString) v2).get();
+      String s1 = v1.asString();
+      String s2 = v2.asString();
 
       switch (operation) {
         case EQUALS:

@@ -22,6 +22,18 @@ public class TypeChecker {
     environment.assign(id, type);
   }
 
+  public void overwrite(String id, IType type) throws TypeCheckError {
+    environment.overwrite(id, type);
+  }
+
+  public void assignTempType(String id, IType type) throws TypeCheckError {
+    environment.assignTempType(id, type);
+  }
+
+  public void loadTempType(IType type) throws TypeCheckError {
+    environment.loadTempType(type);
+  }
+
   public IType find(String id) throws TypeCheckError {
     return environment.find(id);
   }

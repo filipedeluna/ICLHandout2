@@ -8,10 +8,7 @@ import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
-import types.IType;
-import types.TInt;
-import types.TString;
-import types.TStruct;
+import types.*;
 import values.IValue;
 import values.VInt;
 import values.VString;
@@ -51,12 +48,15 @@ public class ASTArithmetic implements ASTNode {
       }
     }
 
-    // TODO Add struct here and string
+    if (v1 instanceof VString && v2 instanceof VString)
+      return new VString(v1.asString() + v2.asString());
+
     if (operation == ArithmeticOperation.ADD) {
       if (v1 instanceof VStruct && v2 instanceof VStruct) {
-      }
+        if (!((VStruct) v1).merge((VStruct) v2))
+          throw new InterpretationError("Duplicate parameter in struct", operation.name());
 
-      if (v1 instanceof VString && v2 instanceof VString) {
+        return v1;
       }
     }
 
@@ -97,8 +97,17 @@ public class ASTArithmetic implements ASTNode {
     if (type1 instanceof TInt)
       return TInt.SINGLETON;
 
-    if (type1 instanceof TStruct)
-      return TStruct.SINGLETON;
+    if (type1 instanceof TBool)
+      return TBool.SINGLETON;
+
+    if (type1 instanceof TStruct) {
+      if (operation == ArithmeticOperation.ADD) {
+        if (!((TStruct) type1).merge((TStruct) type2))
+          throw new TypeCheckError("Duplicate parameter in struct", operation.name());
+
+        return type1;
+      }
+    }
 
     if (type1 instanceof TString)
       return TString.SINGLETON;

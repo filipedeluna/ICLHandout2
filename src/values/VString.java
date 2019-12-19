@@ -10,13 +10,9 @@ public final class VString implements IValue {
     this.val = val;
   }
 
-  public String get() {
-    return val;
-  }
-
   @Override
   public boolean equals(IValue value) {
-    return value instanceof VString && ((VString) value).get().equals(val);
+    return value instanceof VString && value.asString().equals(val);
   }
 
   public IType type() {

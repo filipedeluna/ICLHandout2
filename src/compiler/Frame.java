@@ -1,14 +1,14 @@
 package compiler;
 
 import compiler.errors.CompileError;
-import compiler.errors.CompilerUndefinedVariableError;
 
 import java.util.ArrayList;
 
 final class Frame {
   private String frameId;
   private Frame parentFrame;
-  private ArrayList<String> fields;
+  private ArrayList<FrameField> fields;
+  private
 
   Frame(String frameId) {
     this.frameId = frameId;
@@ -21,8 +21,8 @@ final class Frame {
     fields = new ArrayList<>();
   }
 
-  String addField(String id) {
-    fields.add(id);
+  String addField(String id, boolean isStruct) {
+   // fields.add(id);
 
     return "x" + (fields.size() - 1);
   }
@@ -37,7 +37,24 @@ final class Frame {
       subFrameList.add(cFrame.frameId);
 
       if (cFrame.containsVar(varId))
-        return new FrameField(cFrame.getField(varId), subFrameList);
+        //return new FrameField(cFrame.getField(varId), subFrameList);
+
+      cFrame = cFrame.parentFrame;
+    }
+
+    return null;
+  }
+
+  FrameField getFrameFieldFromStruct(String structId) throws CompileError {
+    ArrayList<String> subFrameList = new ArrayList<>();
+
+    Frame cFrame = this;
+
+    while (cFrame != null) {
+      subFrameList.add(cFrame.frameId);
+
+      if (cFrame.containsVar(structId))
+       // return new FrameField(cFrame.getField(structId), subFrameList);
 
       cFrame = cFrame.parentFrame;
     }
@@ -70,6 +87,6 @@ final class Frame {
         return "x" + i;
     }
 
-    throw new CompilerUndefinedVariableError(varId);
+    throw new CompileError("Variable " + varId + " not defined in frame", "Get field from frame");
   }
 }

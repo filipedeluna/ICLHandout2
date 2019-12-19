@@ -39,8 +39,7 @@ public final class ASTWhile implements ASTNode {
 
     // While start
     condition.compile(compiler);
-    int conditionEndLine = compiler.getCurrentLine();
-    compiler.emit(ByteCode.IF, String.valueOf(conditionEndLine + actionLines + 2));
+    compiler.emit(ByteCode.IF, compiler.getCurrentLineOffset(actionLines + 2));
 
     // Action
     action.compile(compiler);

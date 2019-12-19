@@ -7,10 +7,7 @@ import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
-import types.IType;
-import types.TCell;
-import types.TFun;
-import types.TVoid;
+import types.*;
 import values.IValue;
 
 public class ASTApply implements ASTNode {
@@ -62,10 +59,31 @@ public class ASTApply implements ASTNode {
     if (type1Id.length() == 0)
       throw new TypeCheckError("Corrupted variable", "apply");
 
+    if (type1 instanceof TStructCell) {
+      String fieldId = ((TStructCell) type1).getFieldId();
+
+      IType structType = typeChecker.find(type1Id);
+
+      if (!(structType instanceof TStruct))
+        throw new TypeCheckError("Variable is not a struct", "apply");
+
+      if (!((TStruct) structType).contains(fieldId))
+        throw new TypeCheckError("Field " + fieldId + " does not exist in struct", "apply");
+
+      IType fieldType = ((TStruct) structType).get(fieldId);
+
+      if (!fieldType.equals(type2))
+        throw new TypeCheckError("Invalid value applied, types do not match", "apply", fieldType, type2);
+    }
+
     IType varType = typeChecker.find(type1Id);
 
     if (!varType.equals(type2))
       throw new TypeCheckError("Invalid value applied, types do not match", "apply", varType, type2);
+
+    if (varType instanceof TStruct) {
+      typeChecker.overwrite(type1Id, type2);
+    }
 
     return TVoid.SINGLETON;
   }

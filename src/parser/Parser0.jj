@@ -1,12 +1,25 @@
 PARSER_BEGIN(Parser)
 package parser;
 
-import interpreter.errors.*;
-import compiler.errors.*;
-import node.*;
-
-import compiler.Compiler;
 import interpreter.Interpreter;
+import interpreter.errors.*;
+import typechecker.TypeChecker;
+import typechecker.errors.*;
+//import compiler.Compiler;
+// import compiler.errors.*;
+
+import node.*;
+import node.block.*;
+import node.types.*;
+import node.variable.*;
+import node.relational.*;
+import node.logical.*;
+import node.arithmetic.*;
+import node.instruction.*;
+import types.*;
+import values.*;
+
+import java.util.ArrayList;
 
 /** ID lister. */
 public class Parser {
@@ -15,8 +28,9 @@ public class Parser {
         parser.Parser parser = new parser.Parser(System.in);
 
         ASTNode exp;
-        Compiler compiler = null;
+        // Compiler compiler = null;
         Interpreter interpreter;
+        TypeChecker typeChecker = new TypeChecker();
 
         while (true) {
             try {
@@ -24,10 +38,12 @@ public class Parser {
 
                 // PARSE
                 interpreter = new Interpreter();
+                typeChecker = new TypeChecker();
 
-                if (exp != null)
+                if (exp != null) {
+                    exp.typeCheck(typeChecker);
                     System.out.println("Result: " + exp.eval(interpreter));
-                else
+                } else
                     System.out.println("Result: null");
 
                 System.out.println();
@@ -37,7 +53,7 @@ public class Parser {
                 // exp.compile(compiler);
                 // compiler.end();
             } catch (Exception e) {
-                handleErrors(e, compiler);
+                handleErrors(e, /* compiler */ null);
                 parser.ReInit(System.in);
             }
         }
@@ -47,14 +63,14 @@ public class Parser {
         UTILS
     */
     private static void handleErrors(Exception e, Compiler compiler) {
-        try {
-          if (compiler != null)
-            compiler.deleteGeneratedFiles();
-        } catch (CompileError ce) {
-            System.err.println(ce.getMessage());
-        }
+       // try {
+         // if (compiler != null)
+        //    compiler.deleteGeneratedFiles();
+        //} catch (CompileError ce) {
+        //    System.err.println(ce.getMessage());
+        //}
 
-        if (e instanceof CompileError || e instanceof InterpretationError)
+        if (/*e instanceof CompileError ||*/ e instanceof InterpretationError || e instanceof TypeCheckError)
             System.err.println(e.getMessage());
         else
             e.printStackTrace();
@@ -262,7 +278,7 @@ ASTNode Fact() :
         n1 = Init()
         | <SUB> n1 = Log() { n1 = new ASTNeg(n1); }
         | <COMP> n1 = Log() { n1 = new ASTComp(n1); }
-        | <LPAR> n1 = Log() <RPAR> ( <APPLY> n2 = Log() { n1 = new ASTApply(n1, n2); } ) ?
+        | <LPAR> n1 = Val() <RPAR> ( <APPLY> n2 = Log() { n1 = new ASTApply(n1, n2); } ) ?
         | <LET> n1 = Decl() <END>
         | <WHILE> n1 = Log() <DO> n2 = Seq() <END> { n1 = new ASTWhile(n1, n2); }
         | <IF> n1 = Log() <THEN> n2 = Seq() <ELSE> n3 = Seq() <END> { n1 = new ASTIf(n1, n2, n3); }
@@ -277,28 +293,27 @@ ASTNode Val() :
 {
     Token t1, t2;
     ASTNode n1, n2;
-    VStruct v;
     ArrayList<ASTNode> funParams;
 }
 {
-    Lit()
-    | <DEREF> t1 = <Id> { return new ASTDeref(t1.image); }
-    | <LBRKT> v = Struct() { return new ASTStruct(v); } <RBRKT>
-    | t1 = <Id>  { n1 = new ASTVar(t1.image); }
+    n1 = Lit()
+    | <DEREF> t1 = <Id>
+        ( <FIELD> t2 = <Id>  { return new ASTStructFieldDeref(t1.image, t2.image); } )?
+        { return new ASTDeref(t1.image); }
+    | <LBRKT> n1 = Struct() { return n1; } <RBRKT>
+    | t1 = <Id> ( <FIELD> t2 = <Id> { n1 = new ASTStructFieldVar(t1.image, t2.image); } )? { n1 = new ASTVar(t1.image); }
         (
             <APPLY> n2 = Log() { return new ASTApply(n1, n2); }
-            | <FIELD> t2 = <Id> { return new ASTStructDeref(t1.image, t2.image); }
             | <LPAR>
                     { funParams = new ArrayList<ASTNode>(); }
                     (
-                        <RPAR> { return new ASTFunCall(n1); }
-                        | n2 = Log() { funParams.add(n2); }
-                            ( <COMMA> n2 = Log() { funParams.add(n2); } )*
-                          <RPAR> { return new ASTFunCall(n1, funParams); }
-
+                        <RPAR> { return new ASTFunCall(t1.image); }
+                        | n2 = Log() { funParams.add(n2); } ( <COMMA> n2 = Log() { funParams.add(n2); } )*
+                        <RPAR> { return new ASTFunCall(t1.image, funParams); }
                     )
-
         )
+
+    { return n1; }
 }
 
 ASTNode Lit() :
@@ -325,9 +340,9 @@ ASTNode Decl() :
     (
         t = <Id> <COLON> (
             ( <REFTYPE> type = Singleton() <EQ> n = Init() )
-            | type = FunType() <EQ> n = Init() { n = new ASTFun(type, n); }
+            | type = FunType() <EQ> n = Init()
         )
-        { assignments.add(new ASTAssign(t.image, n)); }
+        { assignments.add(new ASTAssign(t.image, type, n)); }
     )*
     <IN> n = Seq()
 
@@ -350,22 +365,27 @@ ASTNode Init() :
 {
     Token t;
     ASTNode n;
-    VStruct v;
-    ArrayList<ASTFunParam> funParams;
+    ArrayList<FunParam> funParams;
 }
 {
-
     <NEW> (
-        t = <Num> { return new ASTInit(new VInt(Integer.parseInt(t.image))); }
-        | t = <BOOL> { return new ASTInit(new VBool(Boolean.parseBoolean(t.image))); }
-        | t = <Id> { return new ASTInit(new VRef(t.image)); }
-        | <QUOTE> t = <STRING> { return new ASTInit(new VString(t.image)); } <QUOTE>
-        | <LBRKT> v = Struct() { return new ASTInit(v); } <RBRKT>
+        n = LitInit() { return n; }
+        | <LBRKT> n = Struct() { return new ASTStructInit(n); } <RBRKT>
     )
-    | <FUNC>  funParams = FunParams() <FUNCSTART> n = Log() { return new ASTInit(new VFun(funParams, n)); }
+    | <FUNC> funParams = FunParams() <FUNCSTART> n = Log() { return new ASTFunInit(funParams, n); }
 }
 
-VStruct Struct() :
+ASTNode LitInit() :
+{
+    Token t;
+}
+{
+    t = <Num> { return new ASTInit(new VInt(Integer.parseInt(t.image))); }
+    | t = <BOOL> { return new ASTInit(new VBool(Boolean.parseBoolean(t.image))); }
+    | <QUOTE> t = <STRING> { return new ASTInit(new VString(t.image)); } <QUOTE>
+}
+
+ASTStruct Struct() :
 {
     Token t;
     ASTNode n;
@@ -375,21 +395,21 @@ VStruct Struct() :
    { structParams = new ArrayList<ASTStructParam>(); }
    ( t = <Id> <EQ> n = Lit() { structParams.add(new ASTStructParam(t.image, n)); }
         ( <SEQ_END> t = <Id> <EQ> n = Lit() { structParams.add(new ASTStructParam(t.image, n)); } )* )?
-   { return new VStruct(structParams); }
+   { return new ASTStruct(structParams); }
 }
 
-ArrayList<ASTFunParam> FunParams() :
+ArrayList<FunParam> FunParams() :
 {
   Token t;
   IType type;
-  ArrayList<ASTFunParam> funParams;
+  ArrayList<FunParam> funParams;
 }
 {
-    { funParams = new ArrayList<ASTFunParam>(); }
+    { funParams = new ArrayList<FunParam>(); }
 
     (
-       t = <Id> <COLON> type = Singleton() { funParams.add(new ASTFunParam(t.image, type)); }
-       ( <COMMA> t = <Id> <COLON> type = Singleton() { funParams.add(new ASTFunParam(t.image, type)); } )*
+       t = <Id> <COLON> type = Singleton() { funParams.add(new FunParam(t.image, type)); }
+       ( <COMMA> t = <Id> <COLON> type = Singleton() { funParams.add(new FunParam(t.image, type)); } )*
     )?
 
     { return funParams; }

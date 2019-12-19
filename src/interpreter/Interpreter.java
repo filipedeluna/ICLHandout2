@@ -3,6 +3,7 @@ package interpreter;
 import interpreter.errors.InterpretationError;
 import values.IValue;
 import values.VCell;
+import values.VStruct;
 
 import java.util.HashSet;
 
@@ -19,7 +20,7 @@ public class Interpreter {
     environment.beginScope();
   }
 
-  public void endEnvScope() throws CellNotFoundError {
+  public void endEnvScope() throws InterpretationError {
     HashSet<VCell> cells = environment.currentScopeCells();
 
     for (VCell cell : cells) {
@@ -31,7 +32,7 @@ public class Interpreter {
 
   public void assign(String id, IValue value) throws InterpretationError {
     if (!(value instanceof VCell))
-      throw new InterpretationError("Unexpected type assigned to variable " + id, "assign value to variable"));
+      throw new InterpretationError("Unexpected type assigned to variable " + id, "assign value to variable");
 
     environment.assign(id, ((VCell) value));
   }
@@ -53,14 +54,14 @@ public class Interpreter {
     if (value instanceof VCell)
       throw new InterpretationError("Unexpected type", "initialize variable", value.type());
 
+    // TODO fix init for diff types
+
     int address = memory.addCell(value);
 
     return new VCell(address);
   }
 
   public VCell find(String id) throws InterpretationError {
-    VCell value = environment.find(id);
-
-    return value;
+    return environment.find(id);
   }
 }

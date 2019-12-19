@@ -21,15 +21,13 @@ public class ASTPrint implements ASTNode {
   public IValue eval(Interpreter interpreter) throws InterpretationError {
     IValue value = node.eval(interpreter);
 
-    if (value instanceof VString || value instanceof VInt || value instanceof VBool)
-      System.out.println(value.asString());
+    System.out.println(value.asString());
 
     return null;
   }
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-
   }
 
   @Override

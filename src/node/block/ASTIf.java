@@ -42,18 +42,16 @@ public final class ASTIf implements ASTNode {
   public void compile(Compiler compiler) throws CompileError {
     condition.compile(compiler);
 
-    int currentLine = compiler.getCurrentLine();
     int action1Lines = compiler.countLines(action1);
 
     // Start If
-    compiler.emit(ByteCode.IF, String.valueOf(currentLine + action1Lines + 2));
+    compiler.emit(ByteCode.IF, compiler.getCurrentLineOffset(action1Lines + 2));
     action1.compile(compiler);
 
     int action2Lines = compiler.countLines(action2);
-    compiler.getCurrentLine();
 
     // Start then
-    compiler.emit(ByteCode.GOTO, String.valueOf(currentLine + action2Lines + 2));
+    compiler.emit(ByteCode.GOTO, compiler.getCurrentLineOffset(action2Lines + 2));
     action2.compile(compiler);
   }
 
