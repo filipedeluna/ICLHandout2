@@ -61,7 +61,6 @@ public class ASTFunInit implements ASTNode {
 
   @Override
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
-    IType returnType = block.typeCheck(typeChecker);
 
     ArrayList<IType> paramTypes = new ArrayList<>();
 
@@ -74,6 +73,19 @@ public class ASTFunInit implements ASTNode {
 
       paramTypes.add(paramType);
     }
+
+    // Create dummy vars for type checking-------------
+
+    typeChecker.beginEnvScope();
+
+    for (FunParam funParam : funParams)
+      typeChecker.assign(funParam.getId(), funParam.getType());
+
+    // ------------------------------------------------
+
+    IType returnType = block.typeCheck(typeChecker);
+
+    typeChecker.endEnvScope();
 
     typeChecker.loadTempType(new TFun(paramTypes, returnType));
 

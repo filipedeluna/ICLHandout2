@@ -25,12 +25,7 @@ public class ASTStructParam implements ASTNode {
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpretationError {
-    IValue value = node.eval(interpreter);
-
-    if (!(value.type() instanceof TBool) && !(value.type() instanceof TString) && !(value.type() instanceof TInt))
-      throw new InterpretationError("Unexpected value type", "cast to struct parameter", value.type());
-
-    return value;
+    return node.eval(interpreter);
   }
 
   @Override

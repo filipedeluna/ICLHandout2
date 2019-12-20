@@ -19,12 +19,8 @@ public class TypeCheckError extends Exception {
       if (types.length > 1)
         sb.append("s");
       sb.append(": ");
-      for (IType type : types) {
-        if (sb.length() > 0)
-          sb.append(type.name());
-        else
-          sb.append(", ").append(type.name());
-      }
+      for (IType type : types)
+        sb.append(type.name()).append(" ");
     }
 
     sb.append(".");

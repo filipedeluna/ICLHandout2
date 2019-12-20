@@ -53,10 +53,14 @@ public class ASTLet implements ASTNode {
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
     typeChecker.beginEnvScope();
 
-    node.typeCheck(typeChecker);
+    for (ASTAssign assignment : assignments) {
+      assignment.typeCheck(typeChecker);
+    }
+
+    IType returnType = node.typeCheck(typeChecker);
 
     typeChecker.endEnvScope();
 
-    return node.typeCheck(typeChecker);
+    return returnType;
   }
 }

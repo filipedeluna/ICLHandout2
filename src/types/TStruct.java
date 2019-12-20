@@ -45,29 +45,7 @@ public class TStruct implements IType {
 
   @Override
   public boolean equals(IType type) {
-    if (!(type instanceof TStruct))
-      return false;
-
-    HashMap<String, IType> compFields = ((TStruct) type).getFields();
-
-    if (compFields.size() != fields.size())
-      return false;
-
-    String fieldName;
-    IType fieldType;
-
-    for (Entry<String, IType> field : fields.entrySet()) {
-      fieldName = field.getKey();
-      fieldType = field.getValue();
-
-      if (!compFields.containsKey(fieldName))
-        return false;
-
-      if (!compFields.get(fieldName).equals(fieldType))
-        return false;
-    }
-
-    return true;
+    return type instanceof TStruct;
   }
 
   @Override

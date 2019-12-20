@@ -24,12 +24,8 @@ public class CompileError extends Exception {
       if (values.length > 1)
         sb.append("s");
       sb.append(": ");
-      for (IType type : types) {
-        if (sb.length() > 0)
-          sb.append(type.name());
-        else
-          sb.append(", ").append(type.name());
-      }
+      for (IType type : types)
+        sb.append(type.name()).append(" ");
     }
 
     if (values.length > 0) {
@@ -37,12 +33,8 @@ public class CompileError extends Exception {
       if (values.length > 1)
         sb.append("s");
       sb.append(": ");
-      for (IValue value : values) {
-        if (sb.length() > 0)
-          sb.append(value.asString());
-        else
-          sb.append(", ").append(value.asString());
-      }
+      for (IValue value : values)
+        sb.append(value.asString()).append(" ");
     }
 
     sb.append(".");

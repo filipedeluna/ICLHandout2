@@ -23,9 +23,6 @@ public class ASTInit implements ASTNode {
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpretationError {
-    if (value instanceof VFun || value instanceof VCell || value instanceof VStruct)
-      throw new InterpretationError("Invalid value type", "variable initialization", value.type());
-
     return interpreter.init(value);
   }
 

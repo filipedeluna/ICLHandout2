@@ -42,7 +42,10 @@ public class Parser {
 
                 if (exp != null) {
                     exp.typeCheck(typeChecker);
-                    System.out.println("Result: " + exp.eval(interpreter));
+
+                     IValue value = exp.eval(interpreter);
+                     if (value != null)
+                       System.out.println("Result: " + value);
                 } else
                     System.out.println("Result: null");
 
@@ -152,7 +155,6 @@ TOKEN :
   | < RBRKT : "}" >
 
   // STRINGS
-  | < STRING: ( "[^\"]" )+ >
   | < QUOTE : "\"" >
 
   // Commands
@@ -282,7 +284,7 @@ ASTNode Fact() :
         | <LET> n1 = Decl() <END>
         | <WHILE> n1 = Log() <DO> n2 = Seq() <END> { n1 = new ASTWhile(n1, n2); }
         | <IF> n1 = Log() <THEN> n2 = Seq() <ELSE> n3 = Seq() <END> { n1 = new ASTIf(n1, n2, n3); }
-        | <PRINT> n1 = Val() { n1 = new ASTPrint(n1); }
+        | <PRINT> n1 = Log() { n1 = new ASTPrint(n1); }
         | n1 = Val()
     )
 
@@ -296,12 +298,10 @@ ASTNode Val() :
     ArrayList<ASTNode> funParams;
 }
 {
-    n1 = Lit()
-    | <DEREF> t1 = <Id>
-        ( <FIELD> t2 = <Id>  { return new ASTStructFieldDeref(t1.image, t2.image); } )?
-        { return new ASTDeref(t1.image); }
+    ( n1 = Lit() { return n1; } )
+    | <DEREF> t1 = <Id> ( <FIELD> t2 = <Id>  { return new ASTStructFieldDeref(t1.image, t2.image); } )? { return new ASTDeref(t1.image); }
     | <LBRKT> n1 = Struct() { return n1; } <RBRKT>
-    | t1 = <Id> ( <FIELD> t2 = <Id> { n1 = new ASTStructFieldVar(t1.image, t2.image); } )? { n1 = new ASTVar(t1.image); }
+    | t1 = <Id> { n1 = new ASTVar(t1.image); } ( <FIELD> t2 = <Id> { n1 = new ASTStructFieldVar(t1.image, t2.image); } )?
         (
             <APPLY> n2 = Log() { return new ASTApply(n1, n2); }
             | <LPAR>
@@ -312,19 +312,19 @@ ASTNode Val() :
                         <RPAR> { return new ASTFunCall(t1.image, funParams); }
                     )
         )
-
     { return n1; }
 }
 
 ASTNode Lit() :
 {
     Token t;
-    IValue v;
+    String s = new String();
 }
 {
     t = <Num> { return new ASTInt(new VInt(Integer.parseInt(t.image))); }
     | t = <BOOL> { return new ASTBool(new VBool(Boolean.parseBoolean(t.image))); }
-    | <QUOTE> t = <STRING> { return new ASTString(new VString(t.image)); } <QUOTE>
+    | <QUOTE> ( t = <Id> { s = t.image; } ( t = <Id> { s += " " + t.image; } )* )?  <QUOTE>
+        { return new ASTString(new VString(s)); }
 }
 
 ASTNode Decl() :
@@ -370,19 +370,22 @@ ASTNode Init() :
 {
     <NEW> (
         n = LitInit() { return n; }
-        | <LBRKT> n = Struct() { return new ASTStructInit(n); } <RBRKT>
+        | <LBRKT> n = Struct() <RBRKT> { return new ASTStructInit(n); }
     )
-    | <FUNC> funParams = FunParams() <FUNCSTART> n = Log() { return new ASTFunInit(funParams, n); }
+    | <FUNC> funParams = FunParams() <FUNCSTART> n = Log() <END> { return new ASTFunInit(funParams, n); }
 }
 
 ASTNode LitInit() :
 {
     Token t;
+    String s = new String();
 }
 {
     t = <Num> { return new ASTInit(new VInt(Integer.parseInt(t.image))); }
     | t = <BOOL> { return new ASTInit(new VBool(Boolean.parseBoolean(t.image))); }
-    | <QUOTE> t = <STRING> { return new ASTInit(new VString(t.image)); } <QUOTE>
+    | t = <Id> { return new ASTVarInit(t.image); }
+    | <QUOTE> ( t = <Id> { s = "" + t.image; } ( t = <Id> { s += " " + t.image; } )* )? <QUOTE>
+        { return new ASTInit(new VString(s)); }
 }
 
 ASTStruct Struct() :
@@ -394,7 +397,8 @@ ASTStruct Struct() :
 {
    { structParams = new ArrayList<ASTStructParam>(); }
    ( t = <Id> <EQ> n = Lit() { structParams.add(new ASTStructParam(t.image, n)); }
-        ( <SEQ_END> t = <Id> <EQ> n = Lit() { structParams.add(new ASTStructParam(t.image, n)); } )* )?
+        ( <SEQ_END> t = <Id> <EQ> n = Lit() { structParams.add(new ASTStructParam(t.image, n)); } )*
+   )?
    { return new ASTStruct(structParams); }
 }
 

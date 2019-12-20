@@ -10,6 +10,7 @@ import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
 import types.IType;
 import types.TInt;
+import types.TString;
 import values.IValue;
 import values.VString;
 
@@ -36,9 +37,9 @@ public final class ASTString implements ASTNode {
 
   @Override
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
-    if (!(val.type() instanceof TInt))
+    if (!(val.type() instanceof TString))
       throw new TypeCheckError("Unexpected type", "cast to int", val.type());
 
-    return TInt.SINGLETON;
+    return TString.SINGLETON;
   }
 }

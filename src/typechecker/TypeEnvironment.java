@@ -24,15 +24,13 @@ final class TypeEnvironment {
   }
 
   void loadTempType(IType type) throws TypeCheckError {
-    if (tempType == null)
-      throw new TypeCheckError("Temporary type not loaded", "type initialization");
+    if (tempType != null)
+      throw new TypeCheckError("Temporary type already loaded", "type initialization");
 
     tempType = type;
   }
 
   boolean compareTempType(IType type) throws TypeCheckError {
-
-
     return tempType.equals(type);
   }
 
@@ -46,7 +44,7 @@ final class TypeEnvironment {
     HashMap<String, IType> scope = scopes.peek();
 
     if (scope.get(id) != null)
-      throw new TypeCheckError("Variable " + id + "already defined", "assign " + id + " to scope");
+      throw new TypeCheckError("Variable " + id + " already defined", "assign " + id + " to scope");
 
     if (!tempType.equals(type))
       throw new TypeCheckError("Types do not match", "assign " + id + " to scope");
@@ -63,7 +61,7 @@ final class TypeEnvironment {
     HashMap<String, IType> scope = scopes.peek();
 
     if (scope.get(id) != null)
-      throw new TypeCheckError("Variable " + id + "already defined", "assign");
+      throw new TypeCheckError("Variable " + id + " already defined", "assign");
 
     scope.put(id, type);
   }
@@ -75,7 +73,7 @@ final class TypeEnvironment {
     HashMap<String, IType> scope = scopes.peek();
 
     if (scope.get(id) == null)
-      throw new TypeCheckError("Variable " + id + "not found", "variable find");
+      throw new TypeCheckError("Variable " + id + " not found", "variable find");
 
     scope.put(id, type);
   }
@@ -86,6 +84,6 @@ final class TypeEnvironment {
         return scope.get(id);
     }
 
-    throw new TypeCheckError("Variable " + id + "not found", "variable find");
+    throw new TypeCheckError("Variable " + id + " not found", "variable find");
   }
 }

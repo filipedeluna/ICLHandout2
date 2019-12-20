@@ -7,8 +7,7 @@ import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
-import types.IType;
-import types.TStruct;
+import types.*;
 import values.IValue;
 import values.VStruct;
 
@@ -30,7 +29,7 @@ public final class ASTStruct implements ASTNode {
     for (ASTStructParam structParam : structParams) {
       paramVal = structParam.eval(interpreter);
 
-      if (!struct.contains(structParam.getId()))
+      if (struct.contains(structParam.getId()))
         throw new InterpretationError("Duplicate variable name in struct", "struct creation");
 
       struct.put(structParam.getId(), paramVal);
@@ -52,6 +51,9 @@ public final class ASTStruct implements ASTNode {
 
     for (ASTStructParam structParam : structParams) {
       paramType = structParam.typeCheck(typeChecker);
+
+      if (!(paramType instanceof TInt) && !(paramType instanceof TString) && !(paramType instanceof TBool))
+        throw new TypeCheckError("Invalid struct parameter value", "struct creation");
 
       if (struct.contains(structParam.getId()))
         throw new TypeCheckError("Duplicate variable name in struct", "struct creation");
