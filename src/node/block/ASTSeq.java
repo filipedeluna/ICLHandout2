@@ -35,6 +35,8 @@ public class ASTSeq implements ASTNode {
 
   @Override
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
+    statement.typeCheck(typeChecker);
+
     return node.typeCheck(typeChecker);
   }
 }

@@ -3,9 +3,6 @@ package interpreter;
 import interpreter.errors.InterpretationError;
 import values.IValue;
 import values.VCell;
-import values.VStruct;
-
-import java.util.HashSet;
 
 public class Interpreter {
   private Environment environment;
@@ -20,13 +17,7 @@ public class Interpreter {
     environment.beginScope();
   }
 
-  public void endEnvScope() throws InterpretationError {
-    HashSet<VCell> cells = environment.currentScopeCells();
-
-    for (VCell cell : cells) {
-      memory.removeCellReference(cell.get());
-    }
-
+  public void endEnvScope() {
     environment.endScope();
   }
 
@@ -53,8 +44,6 @@ public class Interpreter {
   public VCell init(IValue value) throws InterpretationError {
     if (value instanceof VCell)
       throw new InterpretationError("Unexpected type", "initialize variable", value.type());
-
-    // TODO fix init for diff types
 
     int address = memory.addCell(value);
 

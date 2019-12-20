@@ -48,8 +48,7 @@ public final class ASTFunCall implements ASTNode {
       paramValue = funcParams.get(i).eval(interpreter);
       paramName = paramNames.get(i);
 
-      interpreter.init(paramValue);
-      interpreter.assign(paramName, paramValue);
+      interpreter.assign(paramName, interpreter.init(paramValue));
     }
 
     IValue result = ((VFun) value).getBlock().eval(interpreter);

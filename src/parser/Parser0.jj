@@ -45,7 +45,7 @@ public class Parser {
 
                      IValue value = exp.eval(interpreter);
                      if (value != null)
-                       System.out.println("Result: " + value);
+                       System.out.println("Result: " + value.asString());
                 } else
                     System.out.println("Result: null");
 
@@ -300,7 +300,7 @@ ASTNode Val() :
 {
     ( n1 = Lit() { return n1; } )
     | <DEREF> t1 = <Id> ( <FIELD> t2 = <Id>  { return new ASTStructFieldDeref(t1.image, t2.image); } )? { return new ASTDeref(t1.image); }
-    | <LBRKT> n1 = Struct() { return n1; } <RBRKT>
+    | <LBRKT> n1 = Struct() <RBRKT> { return n1; }
     | t1 = <Id> { n1 = new ASTVar(t1.image); } ( <FIELD> t2 = <Id> { n1 = new ASTStructFieldVar(t1.image, t2.image); } )?
         (
             <APPLY> n2 = Log() { return new ASTApply(n1, n2); }

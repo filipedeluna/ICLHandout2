@@ -15,12 +15,7 @@ class Memory {
     addressCounter = 0;
   }
 
-  int addCell(IValue value) throws InterpretationError {
-    if (value instanceof VCell) {
-      int cellRefAddress = ((VCell) value).get();
-      addCellReference(cellRefAddress);
-    }
-
+  int addCell(IValue value) {
     memory.put(addressCounter, new MemoryCell(value));
 
     return addressCounter++;
@@ -41,39 +36,8 @@ class Memory {
     return value;
   }
 
-  void changeCellValue(int address, IValue value) throws InterpretationError {
-    MemoryCell oldCell = getCell(address);
-
-    memory.remove(address);
-
-    if (oldCell.getValue() instanceof VCell) {
-      int oldCellValueAddress = ((VCell) oldCell.getValue()).get();
-      removeCellReference(oldCellValueAddress);
-    }
-
+  void changeCellValue(int address, IValue value) {
     memory.put(address, new MemoryCell(value));
-
-    if (value instanceof VCell)
-      addCellReference(((VCell) value).get());
-  }
-
-  void addCellReference(int address) throws InterpretationError {
-    MemoryCell oldCell = getCell(address);
-
-    oldCell.incReferences();
-
-    memory.put(address, new MemoryCell(oldCell));
-  }
-
-  void removeCellReference(int address) throws InterpretationError {
-    MemoryCell oldCell = getCell(address);
-
-    oldCell.decReferences();
-
-    if (oldCell.references() == 0)
-      memory.remove(address);
-    else
-      memory.put(address, new MemoryCell(oldCell));
   }
 
   /*
