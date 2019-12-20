@@ -1,4 +1,4 @@
-package node.types;
+package node.variable;
 
 import types.*;
 

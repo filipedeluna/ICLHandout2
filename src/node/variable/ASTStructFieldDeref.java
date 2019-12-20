@@ -25,15 +25,7 @@ public final class ASTStructFieldDeref implements ASTNode {
   public IValue eval(Interpreter interpreter) throws InterpretationError {
     IValue struct = interpreter.deref(structId);
 
-    if (!(struct instanceof VStruct))
-      throw new InterpretationError("Variable is not of type struct", "struct deref");
-
-    IValue field = ((VStruct) struct).get(fieldId);
-
-    if (field == null)
-      throw new InterpretationError("Field does not exist in struct", "struct deref");
-
-    return field;
+    return ((VStruct) struct).get(fieldId);
   }
 
   @Override

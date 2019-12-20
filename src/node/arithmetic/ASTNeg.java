@@ -24,13 +24,9 @@ public class ASTNeg implements ASTNode {
   public IValue eval(Interpreter interpreter) throws InterpretationError {
     IValue value = node.eval(interpreter);
 
-    if (value instanceof VInt) {
-      int i = ((VInt) value).get();
+    int i = ((VInt) value).get();
 
-      return new VInt(-i);
-    }
-
-    throw new InterpretationError("Invalid value", "negate", value);
+    return new VInt(-i);
   }
 
   @Override

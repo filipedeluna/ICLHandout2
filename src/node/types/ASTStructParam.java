@@ -30,6 +30,7 @@ public class ASTStructParam implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
+    node.compile(compiler);
   }
 
   @Override

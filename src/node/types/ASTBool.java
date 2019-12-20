@@ -2,6 +2,7 @@ package node.types;
 
 import compiler.ByteCode;
 import compiler.Compiler;
+import compiler.CompilerType;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
@@ -21,10 +22,7 @@ public final class ASTBool implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpretationError {
-    if (!(val instanceof VBool))
-      throw new InterpretationError("Unexpected value type", "cast to bool", val.type());
-
+  public IValue eval(Interpreter interpreter) {
     return val;
   }
 
@@ -33,6 +31,8 @@ public final class ASTBool implements ASTNode {
     boolean b = ((VBool) val).get();
 
     compiler.emit(ByteCode.PUSH, b ? "1" : "0");
+
+    compiler.cache.setType(CompilerType.BOOL);
   }
 
   @Override

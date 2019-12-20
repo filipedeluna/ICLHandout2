@@ -1,6 +1,10 @@
 package compiler;
 
 import compiler.errors.*;
+import compiler.frame.Frame;
+import compiler.frame.FrameField;
+import compiler.frame.FrameStructField;
+import compiler.writer.CompilerWriterHandler;
 import node.ASTNode;
 import values.IValue;
 import values.VFun;
@@ -12,17 +16,14 @@ public final class Compiler {
   private int frameIdCounter;
   private IValue tempValue;
 
-
-  // Temporary frame field "memory" register
-  private String currentFieldId;
+  public Cache cache;
 
   public Compiler() throws CompileError {
-    this.compilerWriterHandler = new CompilerWriterHandler();
+    this.compilerWriterHandler = new CompilerWriterHandler(this);
     this.frameIdCounter = 0;
 
     currentFrame = null;
-    currentFieldId = null;
-    tempValue = null;
+    cache = new Cache();
   }
 
   public void emit(ByteCode byteCode, String params) throws CompileError {
@@ -36,13 +37,17 @@ public final class Compiler {
   public void beginFrame() throws CompileError {
     String frameId = generateFrameId();
 
-    if (currentFrame == null) {
-      //currentFrame = new Frame(frameId);
-      compilerWriterHandler.beginFrame(currentFrame);
-    } else {
+    if (currentFrame == null)
+      currentFrame = new Frame(frameId);
+    else
       currentFrame = new Frame(frameId, currentFrame);
-      compilerWriterHandler.beginSubFrame(currentFrame);
-    }
+
+    compilerWriterHandler.beginFrame(currentFrame);
+  }
+
+  public void endFrame() throws CompileError {
+    compilerWriterHandler.endFrame(currentFrame);
+    currentFrame = currentFrame.getParentFrame();
   }
 
   // For Structs and Function types
@@ -66,7 +71,7 @@ public final class Compiler {
     return value;
   }
 
-  public IValue peakTempValue() throws CompileError {
+  public IValue peekTempValue() throws CompileError {
     if (tempValue == null)
       throw new CompileError("Register is empty", "peak temp value");
 
@@ -77,23 +82,6 @@ public final class Compiler {
     return tempValue != null;
   }
 
-  public void pushFrameField(String id) throws CompileError {
-    if (currentFrame.getFrameField(id) == null)
-      throw new CompileError("Undefined variable " + id, "push frame field");
-
-    currentFieldId = id;
-  }
-
-  public String popFrameField() throws CompileError {
-    if (currentFieldId == null)
-      throw new CompileError("Compiler temporary register is empty", "pop frame field");
-
-    String value = currentFieldId;
-    currentFieldId = null;
-
-    return value;
-  }
-
   public void addFrameField(String id, String type) throws CompileError {
     if (currentFrame == null)
       throw new CompileError("Variable referencing outside a frame " + id, "add frame field");
@@ -102,7 +90,7 @@ public final class Compiler {
       throw new CompileError("Duplicate variable " + id, "add frame field");
 
     //String varIndex = currentFrame.addField(id);
-   // compilerWriterHandler.addFieldToFrameClassFile(currentFrame.getFrameId(), varIndex, type);
+    // compilerWriterHandler.addFieldToFrameClassFile(currentFrame.getFrameId(), varIndex, type);
     //compilerWriterHandler.addFrameField(varIndex, currentFrame);
   }
 
@@ -112,24 +100,30 @@ public final class Compiler {
 
     FrameField frameField = currentFrame.getFrameField(id);
 
-    if (frameField == null)
-      throw new CompileError("Undefined variable " + id, "update frame field");
-
     compilerWriterHandler.getFrameParentFields(frameField);
 
     value.compile(this);
 
-    compilerWriterHandler.updateFrameField(frameField);
+    compilerWriterHandler.putFrameField(frameField);
   }
 
-  public void getFrameField(String id) throws CompileError {
+  public void getFrameField(String fieldId) throws CompileError {
     if (currentFrame == null)
-      throw new CompileError("Variable referencing outside a frame " + id, "get frame field");
+      throw new CompileError("Variable referencing outside a frame " + fieldId, "get frame field");
 
-    FrameField frameField = currentFrame.getFrameField(id);
+    FrameField frameField = currentFrame.getFrameField(fieldId);
 
-    if (frameField == null)
-      throw new CompileError("Undefined variable " + id, "get frame field");
+    compilerWriterHandler.getFrameField(frameField);
+  }
+
+  public void getFrameStructField(String fieldId) throws CompileError {
+    if (currentFrame == null)
+      throw new CompileError("Variable referencing outside a frame " + fieldId, "get frame struct field");
+
+    FrameField frameField = currentFrame.getFrameField(fieldId);
+
+    if (!(frameField instanceof FrameStructField))
+      throw new CompileError("Variable is not a struct " + fieldId, "get frame struct field");
 
     compilerWriterHandler.getFrameField(frameField);
   }
@@ -152,10 +146,6 @@ public final class Compiler {
     return compilerWriterHandler.getCurrentLineOffset(offset);
   }
 
-  public void endFrame() throws CompileError {
-    compilerWriterHandler.endFrame(currentFrame);
-    currentFrame = currentFrame.getParentFrame();
-  }
 
   public void loadStaticLink() throws CompileError {
     compilerWriterHandler.loadStaticLink();
@@ -167,6 +157,14 @@ public final class Compiler {
 
   public void deleteGeneratedFiles() throws CompileError {
     compilerWriterHandler.deleteGeneratedFiles();
+  }
+
+  public void startPrint() throws CompileError {
+    compilerWriterHandler.startPrint();
+  }
+
+  public void endPrint(CompilerType type) throws CompileError {
+    compilerWriterHandler.endPrint(type);
   }
 
   /*

@@ -1,4 +1,4 @@
-package node.variable;
+package node.initialization;
 
 import compiler.ByteCode;
 import compiler.Compiler;

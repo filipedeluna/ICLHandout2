@@ -1,37 +1,33 @@
-package node.variable;
+package node.initialization;
 
+import compiler.ByteCode;
 import compiler.Compiler;
-import compiler.errors.CompileError;
 import interpreter.Interpreter;
+import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
 import types.IType;
 import types.TCell;
+import types.TFun;
 import types.TStruct;
 import values.*;
 
-public class ASTStructInit implements ASTNode {
-  private ASTNode node;
+public class ASTInit implements ASTNode {
+  private IValue value;
 
-  public ASTStructInit(ASTNode node) {
-    this.node = node;
+  public ASTInit(IValue value) {
+    this.value = value;
   }
 
   @Override
   public IValue eval(Interpreter interpreter) throws InterpretationError {
-    IValue value = node.eval(interpreter);
-
-    if (!(value instanceof VStruct))
-      throw new InterpretationError("Invalid value type", "struct variable initialization");
-
     return interpreter.init(value);
   }
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    /*
     if (value instanceof VInt || value instanceof VBool) {
       compiler.emit(ByteCode.PUSH, value.asString());
       return;
@@ -43,19 +39,14 @@ public class ASTStructInit implements ASTNode {
     }
 
     compiler.pushTempValue(value);
-
-    throw new CompileError("Invalid value type", "variable initialization");
-    */
   }
 
   @Override
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
-    IType type = node.typeCheck(typeChecker);
+    if (value.type() instanceof TFun || value.type() instanceof TCell || value.type() instanceof TStruct)
+      throw new TypeCheckError("Invalid type", "variable initialization", value.type());
 
-    if (!(type instanceof TStruct))
-      throw new TypeCheckError("Invalid type, expected struct", "struct variable initialization", type);
-
-    typeChecker.loadTempType(type);
+    typeChecker.loadTempType(value.type());
 
     return TCell.SINGLETON;
   }

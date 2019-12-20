@@ -10,6 +10,7 @@ import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
 import types.IType;
 import types.TBool;
+import types.TVoid;
 import values.IValue;
 import values.VBool;
 
@@ -62,8 +63,7 @@ public final class ASTIf implements ASTNode {
     if (!(condType instanceof TBool))
       throw new TypeCheckError("Invalid type for condition", "if", condType);
 
-    // TODO check this... possible to deduce return value?
-    return null;
+    return TVoid.SINGLETON;
   }
 
   private boolean verifyCondition(Interpreter interpreter, ASTNode condition) throws InterpretationError {

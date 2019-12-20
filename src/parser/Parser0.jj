@@ -28,9 +28,9 @@ public class Parser {
         parser.Parser parser = new parser.Parser(System.in);
 
         ASTNode exp;
-        // Compiler compiler = null;
+        Compiler compiler = null;
         Interpreter interpreter;
-        TypeChecker typeChecker = new TypeChecker();
+        TypeChecker typeChecker;
 
         while (true) {
             try {
@@ -52,11 +52,11 @@ public class Parser {
                 System.out.println();
 
                 // COMPILE
-                // compiler = new Compiler();
-                // exp.compile(compiler);
-                // compiler.end();
+                compiler = new Compiler();
+                exp.compile(compiler);
+                compiler.end();
             } catch (Exception e) {
-                handleErrors(e, /* compiler */ null);
+                handleErrors(e, compiler);
                 parser.ReInit(System.in);
             }
         }
@@ -66,14 +66,14 @@ public class Parser {
         UTILS
     */
     private static void handleErrors(Exception e, Compiler compiler) {
-       // try {
-         // if (compiler != null)
-        //    compiler.deleteGeneratedFiles();
-        //} catch (CompileError ce) {
-        //    System.err.println(ce.getMessage());
-        //}
+        try {
+          if (compiler != null)
+            compiler.deleteGeneratedFiles();
+        } catch (CompileError ce) {
+            System.err.println(ce.getMessage());
+        }
 
-        if (/*e instanceof CompileError ||*/ e instanceof InterpretationError || e instanceof TypeCheckError)
+        if (e instanceof CompileError || e instanceof InterpretationError || e instanceof TypeCheckError)
             System.err.println(e.getMessage());
         else
             e.printStackTrace();
@@ -370,7 +370,7 @@ ASTNode Init() :
 {
     <NEW> (
         n = LitInit() { return n; }
-        | <LBRKT> n = Struct() <RBRKT> { return new ASTStructInit(n); }
+        | <LBRKT> n = Struct() <RBRKT> { return new node.initialization.ASTStructInit(n); }
     )
     | <FUNC> funParams = FunParams() <FUNCSTART> n = Log() <END> { return new ASTFunInit(funParams, n); }
 }

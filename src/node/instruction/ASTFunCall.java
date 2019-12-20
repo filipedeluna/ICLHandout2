@@ -35,15 +35,13 @@ public final class ASTFunCall implements ASTNode {
   public IValue eval(Interpreter interpreter) throws InterpretationError {
     IValue value = interpreter.deref(functionId);
 
-    if (!(value instanceof VFun))
-      throw new InterpretationError("A reference to a function was expected from id: " + functionId, "function call");
-
     interpreter.beginEnvScope();
 
     ArrayList<String> paramNames = new ArrayList<>(((VFun) value).getParams().keySet());
 
     IValue paramValue;
     String paramName;
+
     for (int i = 0; i < paramNames.size(); i++) {
       paramValue = funcParams.get(i).eval(interpreter);
       paramName = paramNames.get(i);
@@ -60,7 +58,7 @@ public final class ASTFunCall implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    // compiler.emit(ByteCode.PUSH, String.valueOf(val));
+    // TODO fun call
   }
 
   @Override

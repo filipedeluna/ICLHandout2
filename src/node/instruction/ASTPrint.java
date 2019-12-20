@@ -1,6 +1,7 @@
 package node.instruction;
 
 import compiler.Compiler;
+import compiler.CompilerType;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
@@ -28,6 +29,13 @@ public class ASTPrint implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
+    compiler.startPrint();
+
+    CompilerType type = compiler.cache.getType();
+
+    node.compile(compiler);
+
+    compiler.endPrint(type);
   }
 
   @Override

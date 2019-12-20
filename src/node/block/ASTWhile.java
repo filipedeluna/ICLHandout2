@@ -62,9 +62,6 @@ public final class ASTWhile implements ASTNode {
   private boolean verifyCondition(Interpreter interpreter, ASTNode condition) throws InterpretationError {
     IValue conditionResult = condition.eval(interpreter);
 
-    if (!(conditionResult instanceof VBool))
-      throw new InterpretationError("Invalid value for condition", "while", conditionResult);
-
     return ((VBool) conditionResult).get();
   }
 }

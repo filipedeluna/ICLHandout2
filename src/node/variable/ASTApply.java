@@ -35,7 +35,7 @@ public class ASTApply implements ASTNode {
 
     ref.compile(compiler);
 
-    String id = compiler.popFrameField();
+    String id = compiler.cache.getField();
 
     compiler.updateFrameField(id, value);
   }

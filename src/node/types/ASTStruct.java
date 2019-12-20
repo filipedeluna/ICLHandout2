@@ -1,6 +1,7 @@
 package node.types;
 
 import compiler.Compiler;
+import compiler.CompilerType;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
@@ -12,6 +13,7 @@ import values.IValue;
 import values.VStruct;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public final class ASTStruct implements ASTNode {
   private ArrayList<ASTStructParam> structParams;
@@ -29,9 +31,6 @@ public final class ASTStruct implements ASTNode {
     for (ASTStructParam structParam : structParams) {
       paramVal = structParam.eval(interpreter);
 
-      if (struct.contains(structParam.getId()))
-        throw new InterpretationError("Duplicate variable name in struct", "struct creation");
-
       struct.put(structParam.getId(), paramVal);
     }
 
@@ -40,7 +39,20 @@ public final class ASTStruct implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    //compiler.pushTempValue(val);
+    CompilerType type;
+    String id;
+
+    LinkedHashMap<String, CompilerType> frameParams = new LinkedHashMap<>();
+    for (int i = structParams.size() - 1; i >= 0; i--) {
+      structParams.get(i).compile(compiler);
+      id = structParams.get(i).getId();
+
+      type = compiler.cache.getType();
+
+      frameParams.put(id, type);
+    }
+
+    compiler.cache.setTypeStruct(frameParams);
   }
 
   @Override

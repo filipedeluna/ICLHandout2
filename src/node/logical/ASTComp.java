@@ -24,12 +24,9 @@ public class ASTComp implements ASTNode {
   public IValue eval(Interpreter interpreter) throws InterpretationError {
     IValue value = node.eval(interpreter);
 
-    if (value instanceof VBool) {
-      boolean b = ((VBool) value).get();
-      return new VBool(!b);
-    }
+    boolean b = ((VBool) value).get();
 
-    throw new InterpretationError("Invalid type for operation", "complement", value.type());
+    return new VBool(!b);
   }
 
   @Override

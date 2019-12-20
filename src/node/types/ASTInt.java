@@ -2,7 +2,7 @@ package node.types;
 
 import compiler.ByteCode;
 import compiler.Compiler;
-import interpreter.errors.InterpretationError;
+import compiler.CompilerType;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import node.ASTNode;
@@ -11,7 +11,6 @@ import typechecker.errors.TypeCheckError;
 import types.IType;
 import types.TInt;
 import values.IValue;
-import values.VInt;
 
 public final class ASTInt implements ASTNode {
   private IValue val;
@@ -21,16 +20,15 @@ public final class ASTInt implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpretationError {
-    if (!(val instanceof VInt))
-      throw new InterpretationError("Unexpected value type", "cast to int", val);
-
+  public IValue eval(Interpreter interpreter) {
     return val;
   }
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
     compiler.emit(ByteCode.PUSH, String.valueOf(val));
+
+    compiler.cache.setType(CompilerType.INT);
   }
 
   @Override

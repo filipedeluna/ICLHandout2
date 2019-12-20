@@ -29,19 +29,17 @@ public class ASTLogical implements ASTNode {
     IValue v1 = left.eval(interpreter);
     IValue v2 = right.eval(interpreter);
 
-    if (v1 instanceof VBool && v2 instanceof VBool) {
-      boolean b1 = ((VBool) v1).get();
-      boolean b2 = ((VBool) v2).get();
+    boolean b1 = ((VBool) v1).get();
+    boolean b2 = ((VBool) v2).get();
 
-      switch (operation) {
-        case AND:
-          return new VBool(b1 && b2);
-        case OR:
-          return new VBool(b1 || b2);
-      }
+    switch (operation) {
+      case AND:
+        return new VBool(b1 && b2);
+      case OR:
+        return new VBool(b1 || b2);
     }
 
-    throw new InterpretationError("Invalid types for operation", operation.name(), v1.type(), v2.type());
+    throw new InterpretationError("Undefined operation", operation.name());
   }
 
   @Override
@@ -56,8 +54,6 @@ public class ASTLogical implements ASTNode {
       case OR:
         compiler.emit(ByteCode.OR);
         break;
-      default:
-        throw new CompileError("Undefined operation", operation.name());
     }
   }
 

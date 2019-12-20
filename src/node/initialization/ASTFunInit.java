@@ -1,11 +1,11 @@
-package node.variable;
+package node.initialization;
 
 import compiler.Compiler;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
 import node.ASTNode;
-import node.types.FunParam;
+import node.variable.FunParam;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
 import types.*;
@@ -28,12 +28,8 @@ public class ASTFunInit implements ASTNode {
   public IValue eval(Interpreter interpreter) throws InterpretationError {
     LinkedHashMap<String, IType> params = new LinkedHashMap<>();
 
-    for (FunParam funParam : funParams) {
-      if (params.containsKey(funParam.getId()))
-        throw new InterpretationError("Duplicate parameter name: " + funParam.getId(), "function initialization");
-
+    for (FunParam funParam : funParams)
       params.put(funParam.getId(), funParam.getType());
-    }
 
     VFun function = new VFun(params, block);
 
@@ -61,16 +57,20 @@ public class ASTFunInit implements ASTNode {
 
   @Override
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
-
     ArrayList<IType> paramTypes = new ArrayList<>();
+    ArrayList<String> paramNames = new ArrayList<>();
 
     IType paramType;
     for (FunParam funParam : funParams) {
       paramType = funParam.getType();
 
+      if (paramNames.contains(funParam.getId()))
+        throw new TypeCheckError("Duplicate parameter name: " + funParam.getId(), "function initialization");
+
       if (!(paramType instanceof TInt) && !(paramType instanceof TBool) && !(paramType instanceof TString) && !(paramType instanceof TStruct))
         throw new TypeCheckError("Invalid function parameter type", "function initialization");
 
+      paramNames.add(funParam.getId());
       paramTypes.add(paramType);
     }
 

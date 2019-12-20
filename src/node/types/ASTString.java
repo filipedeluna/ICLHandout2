@@ -2,17 +2,15 @@ package node.types;
 
 import compiler.ByteCode;
 import compiler.Compiler;
+import compiler.CompilerType;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
-import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
 import types.IType;
-import types.TInt;
 import types.TString;
 import values.IValue;
-import values.VString;
 
 public final class ASTString implements ASTNode {
   private IValue val;
@@ -22,17 +20,15 @@ public final class ASTString implements ASTNode {
   }
 
   @Override
-  public IValue eval(Interpreter interpreter) throws InterpretationError {
-    if (!(val instanceof VString))
-      throw new InterpretationError("Unexpected value type", "cast to string", val);
-
+  public IValue eval(Interpreter interpreter) {
     return val;
   }
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    // TODO string files creation
-    compiler.emit(ByteCode.PUSH, String.valueOf(val));
+    compiler.emit(ByteCode.LOAD_C, String.valueOf(val));
+
+    compiler.cache.setType(CompilerType.STRING);
   }
 
   @Override

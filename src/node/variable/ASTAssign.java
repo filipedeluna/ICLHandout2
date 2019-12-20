@@ -38,7 +38,7 @@ public class ASTAssign implements ASTNode {
 
     value.compile(compiler);
 
-    IValue value = compiler.peakTempValue();
+    IValue value = compiler.peekTempValue();
 
     if (value instanceof VBool || value instanceof VInt)
       compiler.addFrameField(id, "I");

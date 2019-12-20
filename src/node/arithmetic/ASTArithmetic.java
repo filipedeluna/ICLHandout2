@@ -2,6 +2,7 @@ package node.arithmetic;
 
 import compiler.ByteCode;
 import compiler.Compiler;
+import compiler.CompilerType;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
@@ -30,7 +31,7 @@ public class ASTArithmetic implements ASTNode {
     IValue v1 = left.eval(interpreter);
     IValue v2 = right.eval(interpreter);
 
-    if (v1 instanceof VInt && v2 instanceof VInt) {
+    if (v1 instanceof VInt) {
       int i1 = ((VInt) v1).get();
       int i2 = ((VInt) v2).get();
 
@@ -48,19 +49,18 @@ public class ASTArithmetic implements ASTNode {
       }
     }
 
-    if (v1 instanceof VString && v2 instanceof VString)
+    if (v1 instanceof VString)
       return new VString(v1.asString() + v2.asString());
 
     if (operation == ArithmeticOperation.ADD) {
-      if (v1 instanceof VStruct && v2 instanceof VStruct) {
-        if (!((VStruct) v1).merge((VStruct) v2))
-          throw new InterpretationError("Duplicate parameter in struct", operation.name());
+      if (v1 instanceof VStruct) {
+        ((VStruct) v1).merge((VStruct) v2);
 
         return v1;
       }
     }
 
-    throw new InterpretationError("Invalid types", operation.name(), v1, v2);
+    return null;
   }
 
   @Override
@@ -68,9 +68,19 @@ public class ASTArithmetic implements ASTNode {
     left.compile(compiler);
     right.compile(compiler);
 
+    CompilerType type = compiler.cache.getType();
+
+
     switch (operation) {
       case ADD:
-        compiler.emit(ByteCode.ADD);
+        if (type == CompilerType.INT)
+          compiler.emit(ByteCode.ADD);
+
+        if (type == CompilerType.STRING)
+          ;// TODO
+
+        if (type == CompilerType.STRUCT)
+          ;// TODO
         break;
       case SUB:
         compiler.emit(ByteCode.SUB);
@@ -81,8 +91,6 @@ public class ASTArithmetic implements ASTNode {
       case DIV:
         compiler.emit(ByteCode.DIV);
         break;
-      default:
-        throw new CompileError("Undefined Operation", operation.name());
     }
   }
 
