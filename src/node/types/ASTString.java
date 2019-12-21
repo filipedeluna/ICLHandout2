@@ -3,6 +3,7 @@ package node.types;
 import compiler.ByteCode;
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import node.ASTNode;
@@ -28,7 +29,7 @@ public final class ASTString implements ASTNode {
   public void compile(Compiler compiler) throws CompileError {
     compiler.emit(ByteCode.LOAD_C, '"' + val.asString() + "'");
 
-    compiler.cache.setType(CompilerType.STRING);
+    compiler.cache.push(new CacheEntry(CompilerType.STRING));
   }
 
   @Override

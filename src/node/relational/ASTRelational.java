@@ -3,6 +3,7 @@ package node.relational;
 import compiler.ByteCode;
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
@@ -86,7 +87,9 @@ public class ASTRelational implements ASTNode {
     left.compile(compiler);
     right.compile(compiler);
 
-    CompilerType type = compiler.cache.getType();
+    CacheEntry cacheEntry = compiler.cache.pop();
+    compiler.cache.pop(); // Pop second entry - should be the same as first
+    CompilerType type = cacheEntry.getType();
 
 
     switch (operation) {

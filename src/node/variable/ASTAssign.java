@@ -2,6 +2,7 @@ package node.variable;
 
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
@@ -12,6 +13,7 @@ import types.*;
 import values.*;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
 public class ASTAssign implements ASTNode {
@@ -38,19 +40,20 @@ public class ASTAssign implements ASTNode {
   public void compile(Compiler compiler) throws CompileError {
     value.compile(compiler);
 
-    CompilerType cType = compiler.cache.getType();
+    CacheEntry cacheEntry = compiler.cache.pop();
+    CompilerType cType = cacheEntry.getType();
 
     if (cType.isLit() || cType == CompilerType.STRUCT) {
       compiler.addFrameField(id, cType);
 
       if (cType == CompilerType.STRUCT) {
-        for (Entry<String, CompilerType> structParam : compiler.cache.getStructParams().entrySet())
+        for (Entry<String, CompilerType> structParam : cacheEntry.getStructParams().entrySet())
           compiler.addFieldToFrameStructField(id, structParam.getKey(), structParam.getValue());
       }
     }
 
     if (cType == CompilerType.FUN) {
-      ArrayList<CompilerType> funParams = compiler.cache.getFunParams();
+      LinkedHashMap<String, CompilerType> funParams = cacheEntry.getFunParams();
 
       CompilerType returnType = null;
 
@@ -63,7 +66,7 @@ public class ASTAssign implements ASTNode {
       if (((TFun) type).getReturnType() instanceof TString)
         returnType = CompilerType.STRING;
 
-      ASTNode funBlock = compiler.cache.getFunBlock();
+      ASTNode funBlock = cacheEntry.getFunBlock();
 
       compiler.addFrameFunctionField(id, funBlock, funParams, returnType);
     }

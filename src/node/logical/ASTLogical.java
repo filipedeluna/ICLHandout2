@@ -47,6 +47,10 @@ public class ASTLogical implements ASTNode {
     left.compile(compiler);
     right.compile(compiler);
 
+    // Pop cache entries
+    compiler.cache.pop();
+    compiler.cache.pop();
+
     switch (operation) {
       case AND:
         compiler.emit(ByteCode.AND);

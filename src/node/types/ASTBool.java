@@ -3,9 +3,9 @@ package node.types;
 import compiler.ByteCode;
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
-import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
@@ -32,7 +32,7 @@ public final class ASTBool implements ASTNode {
 
     compiler.emit(ByteCode.PUSH, b ? "1" : "0");
 
-    compiler.cache.setType(CompilerType.BOOL);
+    compiler.cache.push(new CacheEntry(CompilerType.BOOL));
   }
 
   @Override

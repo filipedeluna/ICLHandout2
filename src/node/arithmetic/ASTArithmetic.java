@@ -3,8 +3,9 @@ package node.arithmetic;
 import compiler.ByteCode;
 import compiler.Compiler;
 import compiler.CompilerType;
-import interpreter.Interpreter;
+import compiler.cache.CacheEntry;
 import compiler.errors.CompileError;
+import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
@@ -14,6 +15,8 @@ import values.IValue;
 import values.VInt;
 import values.VString;
 import values.VStruct;
+
+import java.util.Map.Entry;
 
 public class ASTArithmetic implements ASTNode {
   private ArithmeticOperation operation;
@@ -68,8 +71,9 @@ public class ASTArithmetic implements ASTNode {
     left.compile(compiler);
     right.compile(compiler);
 
-    CompilerType type = compiler.cache.getType();
-
+    CacheEntry cacheEntry = compiler.cache.pop();
+    CacheEntry cacheEntry2 = compiler.cache.pop();
+    CompilerType type = cacheEntry.getType();
 
     switch (operation) {
       case ADD:
@@ -77,10 +81,13 @@ public class ASTArithmetic implements ASTNode {
           compiler.emit(ByteCode.ADD);
 
         if (type == CompilerType.STRING)
-          ;// TODO
+          compiler.stringConcat();
 
-        if (type == CompilerType.STRUCT)
-          ;// TODO
+        if (type == CompilerType.STRUCT) {
+          for (Entry<String, CompilerType> entry : cacheEntry2.getStructParams().entrySet())
+            compiler.addFieldToFrameStructField(cacheEntry.getField(), entry.getKey(), entry.getValue());
+        }
+
         break;
       case SUB:
         compiler.emit(ByteCode.SUB);

@@ -3,21 +3,21 @@ package compiler.frame;
 import compiler.CompilerType;
 import node.ASTNode;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public final class FrameFunctionField extends FrameField {
-  private ArrayList<CompilerType> params;
+  private LinkedHashMap<String, CompilerType> params;
   private CompilerType returnType;
   private ASTNode node;
 
-  public FrameFunctionField(String fieldId, ASTNode node, ArrayList<CompilerType> params, CompilerType returnType) {
+  public FrameFunctionField(String fieldId, ASTNode node, LinkedHashMap<String, CompilerType> params, CompilerType returnType) {
     super(fieldId, CompilerType.FUN);
     this.params = params;
     this.returnType = returnType;
     this.node = node;
   }
 
-  public ArrayList<CompilerType> getParams() {
+  public LinkedHashMap<String, CompilerType> getParams() {
     return params;
   }
 

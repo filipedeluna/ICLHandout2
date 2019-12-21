@@ -5,11 +5,13 @@ import compiler.errors.CompileError;
 import node.ASTNode;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public final class Frame {
   private String frameId;
   private Frame parentFrame;
   private ArrayList<FrameField> fields;
+  private boolean isFunction = false;
 
   public Frame(String frameId) {
     this.frameId = frameId;
@@ -17,9 +19,13 @@ public final class Frame {
   }
 
   public Frame(String frameId, Frame parentFrame) {
-    this.frameId = frameId;
+    this(frameId);
     this.parentFrame = parentFrame;
-    fields = new ArrayList<>();
+  }
+
+  public Frame(String frameId, Frame parentFrame, boolean isFunction) {
+    this(frameId, parentFrame);
+    this.isFunction = isFunction;
   }
 
   public void addField(String fieldId, CompilerType type) throws CompileError {
@@ -38,11 +44,11 @@ public final class Frame {
     throw new CompileError("Invalid type, literal or struct expected from variable " + fieldId, "add field to frame");
   }
 
-  public void addFunField(String fieldId, ASTNode node, ArrayList<CompilerType> paramTypes, CompilerType returnType) throws CompileError {
+  public void addFunField(String fieldId, ASTNode node, LinkedHashMap<String, CompilerType> params, CompilerType returnType) throws CompileError {
     if (findField(fieldId) != null)
       throw new CompileError("Duplicate field " + fieldId, "add fun field to frame");
 
-    fields.add(new FrameFunctionField(fieldId, node, paramTypes, returnType));
+    fields.add(new FrameFunctionField(fieldId, node, params, returnType));
   }
 
   public void addFieldToStructField(String structId, String fieldId, CompilerType type) throws CompileError {
@@ -103,9 +109,13 @@ public final class Frame {
     return parentFrame != null;
   }
 
+  public boolean isFunction() {
+    return isFunction;
+  }
+
   /*
-    UTILS
-  */
+      UTILS
+    */
   private FrameField findField(String fieldId) {
     for (FrameField field : fields) {
       if (field.getFieldId().equals(fieldId))

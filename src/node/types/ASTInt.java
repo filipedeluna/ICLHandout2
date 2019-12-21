@@ -3,6 +3,7 @@ package node.types;
 import compiler.ByteCode;
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import node.ASTNode;
@@ -28,7 +29,7 @@ public final class ASTInt implements ASTNode {
   public void compile(Compiler compiler) throws CompileError {
     compiler.emit(ByteCode.PUSH, val.asString());
 
-    compiler.cache.setType(CompilerType.INT);
+    compiler.cache.push(new CacheEntry(CompilerType.INT));
   }
 
   @Override

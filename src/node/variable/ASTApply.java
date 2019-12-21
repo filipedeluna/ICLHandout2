@@ -2,6 +2,7 @@ package node.variable;
 
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
@@ -34,15 +35,17 @@ public class ASTApply implements ASTNode {
   public void compile(Compiler compiler) throws CompileError {
     ref.compile(compiler);
 
-    CompilerType cellType = compiler.cache.getType();
-    String id = compiler.cache.getField();
+    CacheEntry cacheEntry = compiler.cache.pop();
+
+    CompilerType cellType = cacheEntry.getType();
+    String id = cacheEntry.getField();
 
     if (cellType == CompilerType.CELL) {
       compiler.updateFrameField(id, value);
     }
 
     if (cellType == CompilerType.STRUCT_CELL) {
-      String fieldId = compiler.cache.getSubField();
+      String fieldId = cacheEntry.getSubField();
       compiler.updateFrameStructField(id, fieldId, value);
     }
   }

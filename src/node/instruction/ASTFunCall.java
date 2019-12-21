@@ -11,12 +11,9 @@ import typechecker.errors.TypeCheckError;
 import types.IType;
 import types.TFun;
 import values.IValue;
-import values.VCell;
 import values.VFun;
-import values.VInt;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 
 public final class ASTFunCall implements ASTNode {
   private String functionId;
@@ -60,6 +57,7 @@ public final class ASTFunCall implements ASTNode {
   public void compile(Compiler compiler) throws CompileError {
     for (ASTNode node : funcParams) {
       node.compile(compiler);
+      compiler.cache.pop();
     }
 
     compiler.callFunction(functionId);

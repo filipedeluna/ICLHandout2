@@ -2,6 +2,7 @@ package node.variable;
 
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
@@ -26,8 +27,7 @@ public final class ASTVar implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    compiler.cache.setField(id);
-    compiler.cache.setType(CompilerType.CELL);
+    compiler.cache.push(new CacheEntry(CompilerType.CELL, id));
   }
 
   @Override

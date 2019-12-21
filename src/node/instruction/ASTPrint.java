@@ -2,6 +2,7 @@ package node.instruction;
 
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
@@ -31,7 +32,8 @@ public class ASTPrint implements ASTNode {
   public void compile(Compiler compiler) throws CompileError {
     compiler.startPrint();
 
-    CompilerType type = compiler.cache.getType();
+    CacheEntry cacheEntry = compiler.cache.pop();
+    CompilerType type = cacheEntry.getType();
 
     node.compile(compiler);
 

@@ -3,6 +3,7 @@ package node.initialization;
 import compiler.ByteCode;
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
@@ -30,19 +31,19 @@ public class ASTInit implements ASTNode {
   @Override
   public void compile(Compiler compiler) throws CompileError {
     if (value instanceof VInt) {
-      compiler.cache.setType(CompilerType.INT);
+      compiler.cache.push(new CacheEntry(CompilerType.INT));
       compiler.emit(ByteCode.PUSH, value.asString());
       return;
     }
 
     if (value instanceof VBool) {
-      compiler.cache.setType(CompilerType.BOOL);
+      compiler.cache.push(new CacheEntry(CompilerType.BOOL));
       compiler.emit(ByteCode.PUSH, value.asString());
       return;
     }
 
     if (value instanceof VString) {
-      compiler.cache.setType(CompilerType.STRING);
+      compiler.cache.push(new CacheEntry(CompilerType.STRING));
       compiler.emit(ByteCode.LOAD_C, "\"" + value.asString() + "\"");
       return;
     }

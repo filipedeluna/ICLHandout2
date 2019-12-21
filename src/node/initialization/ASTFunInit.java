@@ -2,6 +2,7 @@ package node.initialization;
 
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
@@ -39,18 +40,18 @@ public class ASTFunInit implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    ArrayList<CompilerType> types = new ArrayList<>();
+    LinkedHashMap<String, CompilerType> params = new LinkedHashMap<>();
 
     for (FunParam funParam : funParams) {
       if (funParam.getType() instanceof TString)
-        types.add(CompilerType.STRING);
+        params.put(funParam.getId(), CompilerType.STRING);
       if (funParam.getType() instanceof TBool)
-        types.add(CompilerType.BOOL);
+        params.put(funParam.getId(), CompilerType.BOOL);
       if (funParam.getType() instanceof TInt)
-        types.add(CompilerType.INT);
+        params.put(funParam.getId(), CompilerType.INT);
     }
 
-    compiler.cache.setTypeFun(types, block);
+    compiler.cache.push(new CacheEntry(params, block));
   }
 
   @Override

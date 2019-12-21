@@ -2,6 +2,7 @@ package node.types;
 
 import compiler.Compiler;
 import compiler.CompilerType;
+import compiler.cache.CacheEntry;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
@@ -43,16 +44,19 @@ public final class ASTStruct implements ASTNode {
     String id;
 
     LinkedHashMap<String, CompilerType> frameParams = new LinkedHashMap<>();
+    CacheEntry cacheEntry;
+
     for (int i = structParams.size() - 1; i >= 0; i--) {
       structParams.get(i).compile(compiler);
       id = structParams.get(i).getId();
 
-      type = compiler.cache.getType();
+      cacheEntry = compiler.cache.pop();
+      type = cacheEntry.getType();
 
       frameParams.put(id, type);
     }
 
-    compiler.cache.setTypeStruct(frameParams);
+    compiler.cache.push(new CacheEntry(frameParams));
   }
 
   @Override

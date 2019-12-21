@@ -1,6 +1,10 @@
 package node.variable;
 
 import compiler.Compiler;
+import compiler.CompilerType;
+import compiler.cache.CacheEntry;
+import compiler.frame.FrameField;
+import compiler.frame.FrameFunctionField;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
@@ -24,7 +28,10 @@ public class ASTDeref implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    compiler.getFrameField(id);
+    FrameField frameField = compiler.getFrameField(id);
+
+    if (frameField.getType().isLit())
+      compiler.cache.push(new CacheEntry(frameField.getType()));
   }
 
   @Override

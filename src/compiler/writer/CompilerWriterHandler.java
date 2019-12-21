@@ -19,6 +19,7 @@ import static java.util.Map.Entry;
 public final class CompilerWriterHandler {
   private static final String OUTPUT_FOLDER = "generated"; // sources root
   private static final String DEFAULT_STATIC_LINK = "4";
+  private static final String STRING_STATIC_LINK = "3";
 
   private static final int DEFAULT_LIMIT_LOCALS = 10;
   private static final int DEFAULT_LIMIT_STACK = 256;
@@ -34,7 +35,7 @@ public final class CompilerWriterHandler {
       this.compiler = compiler;
       fileNames = new HashSet<>();
 
-      File mainFile = createFile("main");
+      File mainFile = createFile("main", true);
       mainWriter = new BufferedCompilerWriter(mainFile);
 
       writeMainHeader();
@@ -218,7 +219,7 @@ public final class CompilerWriterHandler {
 
     StringBuilder args = new StringBuilder();
 
-    for (CompilerType compilerType : field.getParams())
+    for (CompilerType compilerType : field.getParams().values())
       args.append(litTypeToString(compilerType));
 
     CompilerType compilerReturnType = field.getReturnType();
@@ -241,6 +242,19 @@ public final class CompilerWriterHandler {
     mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/io/PrintStream/println(Ljava/lang/String;)V");
   }
 
+  // STRING ........................................................................................................
+  // FROM http://www2.cs.uidaho.edu/~jeffery/courses/445/code-jasmin.html
+  public void stringConcat() throws CompileError {
+    mainWriter.writeBytecode(ByteCode.NEW, "java/lang/StringBuffer");
+    mainWriter.writeBytecode(ByteCode.DUP);
+    mainWriter.writeBytecode(ByteCode.INVOKE_SPECIAL, "java/lang/StringBuffer/<init>()V");
+
+    mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/lang/StringBuffer/append(java/lang/String;)Ljava/lang/StringBuffer;");
+
+    mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/lang/StringBuffer/append(java/lang/String;)Ljava/lang/StringBuffer;");
+    mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/lang/StringBuffer/toString()Ljava/lang/String;");
+  }
+
   /*
     UTILS
   */
@@ -248,7 +262,7 @@ public final class CompilerWriterHandler {
     try {
       String frameId = frame.getFrameId();
 
-      BufferedCompilerWriter writer = new BufferedCompilerWriter(createFile(frameId));
+      BufferedCompilerWriter writer = new BufferedCompilerWriter(createFile(frameId, true));
 
       writer.writeLine(".class " + frameId);
       writer.writeLine(".super java/lang/Object");
@@ -277,7 +291,7 @@ public final class CompilerWriterHandler {
         if (field instanceof FrameStructField) {
           String className = frameId + "struct" + field.getFieldId();
 
-          writer = new BufferedCompilerWriter(createFile(className));
+          writer = new BufferedCompilerWriter(createFile(className, true));
 
           writer.writeLine(".class " + className);
           writer.writeLine(".super java/lang/Object");
@@ -294,12 +308,9 @@ public final class CompilerWriterHandler {
         if (field instanceof FrameFunctionField) {
           ASTNode node = ((FrameFunctionField) field).getNode();
 
-          tempWriter = mainWriter;
-          mainWriter = new BufferedCompilerWriter(createFile(frameId));
-
           StringBuilder args = new StringBuilder();
 
-          for (CompilerType compilerType : ((FrameFunctionField) field).getParams())
+          for (CompilerType compilerType : ((FrameFunctionField) field).getParams().values())
             args.append(litTypeToString(compilerType));
 
           CompilerType compilerReturnType = ((FrameFunctionField) field).getReturnType();
@@ -308,10 +319,21 @@ public final class CompilerWriterHandler {
               ? "V"
               : litTypeToString(compilerReturnType);
 
-          mainWriter.writeLine("");
+          tempWriter = mainWriter;
+          mainWriter = new BufferedCompilerWriter(createFile(frame.getFrameId(), false));
 
           mainWriter.writeLine(".method public static " + field.getFieldId() + "(" + args + ")" + returnType);
+
+          compiler.beginFrame();
+
+          for (Entry<String, CompilerType> param : ((FrameFunctionField) field).getParams().entrySet()) {
+            compiler.addFrameField(param.getKey(), param.getValue());
+          }
+
           node.compile(compiler);
+
+          compiler.endFrame();
+
           mainWriter.writeLine(".end method");
 
           mainWriter.close2();
@@ -350,7 +372,7 @@ public final class CompilerWriterHandler {
     mainWriter.flush2();
   }
 
-  private File createFile(String name) throws CompileError {
+  private File createFile(String name, boolean deleteOld) throws CompileError {
     try {
       String filePath = OUTPUT_FOLDER + "/" + name + ".j";
       File directory = new File(OUTPUT_FOLDER);
@@ -360,10 +382,12 @@ public final class CompilerWriterHandler {
 
       File file = new File(filePath);
 
-      if (file.exists())
+      if (!file.exists()) {
+        file.createNewFile();
+      } else if (deleteOld) {
         file.delete();
-
-      file.createNewFile();
+        file.createNewFile();
+      }
 
       fileNames.add(filePath);
 

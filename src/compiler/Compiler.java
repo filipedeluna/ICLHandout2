@@ -1,5 +1,7 @@
 package compiler;
 
+import compiler.cache.Cache;
+import compiler.cache.CacheEntry;
 import compiler.errors.*;
 import compiler.frame.Frame;
 import compiler.frame.FrameField;
@@ -12,6 +14,7 @@ import values.VFun;
 import values.VStruct;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public final class Compiler {
   private CompilerWriterHandler compilerWriterHandler;
@@ -37,7 +40,7 @@ public final class Compiler {
     compilerWriterHandler.write(byteCode);
   }
 
-  public void beginFrame() throws CompileError {
+  public String beginFrame() throws CompileError {
     String frameId = generateFrameId();
 
     if (currentFrame == null)
@@ -46,6 +49,8 @@ public final class Compiler {
       currentFrame = new Frame(frameId, currentFrame);
 
     compilerWriterHandler.beginFrame(currentFrame);
+
+    return frameId;
   }
 
   public void endFrame() throws CompileError {
@@ -101,11 +106,11 @@ public final class Compiler {
     compilerWriterHandler.putFrameField(frameField);
   }
 
-  public void addFrameFunctionField(String id, ASTNode node, ArrayList<CompilerType> paramTypes, CompilerType returnType) throws CompileError {
+  public void addFrameFunctionField(String id, ASTNode node, LinkedHashMap<String, CompilerType> params, CompilerType returnType) throws CompileError {
     if (currentFrame == null)
       throw new CompileError("Variable referencing outside a frame " + id, "add frame fun field");
 
-    currentFrame.addFunField(id, node, paramTypes, returnType);
+    currentFrame.addFunField(id, node, params, returnType);
   }
 
   public void addFieldToFrameStructField(String structId, String fieldId, CompilerType type) throws CompileError {
@@ -148,13 +153,15 @@ public final class Compiler {
     compilerWriterHandler.putFrameStructField((FrameStructField) frameField, fieldId);
   }
 
-  public void getFrameField(String fieldId) throws CompileError {
+  public FrameField getFrameField(String fieldId) throws CompileError {
     if (currentFrame == null)
       throw new CompileError("Variable referencing outside a frame " + fieldId, "get frame field");
 
     FrameField frameField = currentFrame.getFrameField(fieldId);
 
     compilerWriterHandler.getFrameField(frameField);
+
+    return frameField;
   }
 
   public CompilerType getFrameFieldType(String fieldId) throws CompileError {
@@ -176,6 +183,12 @@ public final class Compiler {
       throw new CompileError("Variable is not a function " + functionId, "get frame struct field");
 
     compilerWriterHandler.callFunction((FrameFunctionField) frameField);
+
+    // Push the return type to the cache
+    CompilerType returnType = ((FrameFunctionField) frameField).getReturnType();
+
+    if (returnType.isLit())
+      cache.push(new CacheEntry(returnType));
   }
 
   public void getFrameStructField(String structId, String fieldId) throws CompileError {
@@ -227,6 +240,14 @@ public final class Compiler {
 
   public void endPrint(CompilerType type) throws CompileError {
     compilerWriterHandler.endPrint(type);
+  }
+
+  public void stringConcat() throws CompileError {
+    compilerWriterHandler.stringConcat();
+  }
+
+  public String getNextFrameId() {
+    return "f" + frameIdCounter;
   }
 
   /*
