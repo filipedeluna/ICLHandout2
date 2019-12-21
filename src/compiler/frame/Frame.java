@@ -72,8 +72,10 @@ public final class Frame {
 
       field = exploredFrame.findField(fieldId);
 
-      if (field != null)
+      if (field != null) {
+        field.setFrameList(subFrameList);
         return field;
+      }
 
       exploredFrame = exploredFrame.parentFrame;
     }

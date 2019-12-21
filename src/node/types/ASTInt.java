@@ -26,7 +26,7 @@ public final class ASTInt implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    compiler.emit(ByteCode.PUSH, String.valueOf(val));
+    compiler.emit(ByteCode.PUSH, val.asString());
 
     compiler.cache.setType(CompilerType.INT);
   }

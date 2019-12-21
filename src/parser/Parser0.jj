@@ -46,7 +46,7 @@ public class Parser {
 
                      IValue value = exp.eval(interpreter);
                      if (value != null)
-                       System.out.println("Result: " + value.asString());
+                       System.out.println("\nResult: " + value.asString());
                 } else
                     System.out.println("Result: null");
 
@@ -156,7 +156,7 @@ TOKEN :
   | < RBRKT : "}" >
 
   // STRINGS
-  | < QUOTE : "\"" >
+  | < STRING: "\"" (<Id> | <Num> | " ")* "\"" >
 
   // Commands
   | < PRINT : "println" >
@@ -324,8 +324,7 @@ ASTNode Lit() :
 {
     t = <Num> { return new ASTInt(new VInt(Integer.parseInt(t.image))); }
     | t = <BOOL> { return new ASTBool(new VBool(Boolean.parseBoolean(t.image))); }
-    | <QUOTE> ( t = <Id> { s = t.image; } ( t = <Id> { s += " " + t.image; } )* )?  <QUOTE>
-        { return new ASTString(new VString(s)); }
+    | t = <STRING> { return new ASTString(new VString(t.image)); }
 }
 
 ASTNode Decl() :
@@ -385,8 +384,7 @@ ASTNode LitInit() :
     t = <Num> { return new ASTInit(new VInt(Integer.parseInt(t.image))); }
     | t = <BOOL> { return new ASTInit(new VBool(Boolean.parseBoolean(t.image))); }
     | t = <Id> { return new ASTVarInit(t.image); }
-    | <QUOTE> ( t = <Id> { s = "" + t.image; } ( t = <Id> { s += " " + t.image; } )* )? <QUOTE>
-        { return new ASTInit(new VString(s)); }
+    | t = <STRING> { return new ASTInit(new VString(t.image)); }
 }
 
 ASTStruct Struct() :

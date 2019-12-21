@@ -28,6 +28,7 @@ public class ASTStructInit implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
+    node.compile(compiler);
   }
 
   @Override

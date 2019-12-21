@@ -3,6 +3,7 @@ package compiler;
 import compiler.errors.*;
 import compiler.frame.Frame;
 import compiler.frame.FrameField;
+import compiler.frame.FrameFunctionField;
 import compiler.frame.FrameStructField;
 import compiler.writer.CompilerWriterHandler;
 import node.ASTNode;
@@ -88,18 +89,21 @@ public final class Compiler {
     if (currentFrame == null)
       throw new CompileError("Variable referencing outside a frame " + id, "add frame field");
 
-    if (currentFrame.hasField(id))
-      throw new CompileError("Duplicate variable " + id, "add frame field");
-
     currentFrame.addField(id, type);
+
+    loadStaticLink();
+
+    if (type == CompilerType.STRUCT)
+      compilerWriterHandler.createStruct(id, currentFrame.getFrameId());
+
+    FrameField frameField = currentFrame.getFrameField(id);
+
+    compilerWriterHandler.putFrameField(frameField);
   }
 
   public void addFrameFunctionField(String id, ASTNode node, ArrayList<CompilerType> paramTypes, CompilerType returnType) throws CompileError {
     if (currentFrame == null)
       throw new CompileError("Variable referencing outside a frame " + id, "add frame fun field");
-
-    if (currentFrame.hasField(id))
-      throw new CompileError("Duplicate variable " + id, "add frame fun field");
 
     currentFrame.addFunField(id, node, paramTypes, returnType);
   }
@@ -108,10 +112,11 @@ public final class Compiler {
     if (currentFrame == null)
       throw new CompileError("Variable referencing outside a frame " + structId, "add frame struct frame field");
 
-    if (currentFrame.hasField(structId))
-      throw new CompileError("Duplicate variable " + structId, "add frame struct frame field");
-
     currentFrame.addFieldToStructField(structId, fieldId, type);
+
+    FrameField frameField = currentFrame.getFrameField(structId);
+
+    compilerWriterHandler.addFieldToStruct(frameField, structId, fieldId, type);
   }
 
   public void updateFrameField(String id, ASTNode value) throws CompileError {
@@ -161,14 +166,26 @@ public final class Compiler {
     return frameField.getType();
   }
 
+  public void callFunction(String functionId) throws CompileError {
+    if (currentFrame == null)
+      throw new CompileError("Variable referencing outside a frame " + functionId, "get frame field type");
+
+    FrameField frameField = currentFrame.getFrameField(functionId);
+
+    if (!(frameField instanceof FrameFunctionField))
+      throw new CompileError("Variable is not a function " + functionId, "get frame struct field");
+
+    compilerWriterHandler.callFunction((FrameFunctionField) frameField);
+  }
+
   public void getFrameStructField(String structId, String fieldId) throws CompileError {
     if (currentFrame == null)
-      throw new CompileError("Variable referencing outside a frame " + fieldId, "get frame struct field");
+      throw new CompileError("Variable referencing outside a frame " + structId, "get frame struct field");
 
     FrameField frameField = currentFrame.getFrameField(structId);
 
     if (!(frameField instanceof FrameStructField))
-      throw new CompileError("Variable is not a struct " + fieldId, "get frame struct field");
+      throw new CompileError("Variable is not a struct " + structId, "get frame struct field");
 
     compilerWriterHandler.getFrameStructField((FrameStructField) frameField, fieldId);
   }

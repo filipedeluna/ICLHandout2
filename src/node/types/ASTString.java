@@ -26,7 +26,7 @@ public final class ASTString implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    compiler.emit(ByteCode.LOAD_C, String.valueOf(val));
+    compiler.emit(ByteCode.LOAD_C, '"' + val.asString() + "'");
 
     compiler.cache.setType(CompilerType.STRING);
   }

@@ -7,7 +7,7 @@ public final class VString implements IValue {
   private String val;
 
   public VString(String val) {
-    this.val = val;
+    this.val = val.substring(1, val.length() - 1);
   }
 
   @Override

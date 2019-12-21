@@ -32,10 +32,10 @@ public final class CompilerWriterHandler {
   public CompilerWriterHandler(Compiler compiler) throws CompileError {
     try {
       this.compiler = compiler;
-      File mainFile = createFile("main.j");
-      mainWriter = new BufferedCompilerWriter(mainFile);
-
       fileNames = new HashSet<>();
+
+      File mainFile = createFile("main");
+      mainWriter = new BufferedCompilerWriter(mainFile);
 
       writeMainHeader();
     } catch (IOException e) {
@@ -191,6 +191,19 @@ public final class CompilerWriterHandler {
     mainWriter.writeBytecode(ByteCode.PUT_FIELD, frameId + "struct" + field.getFieldId() + '/' + structFieldId + " " + litTypeToString(type));
   }
 
+
+  public void createStruct(String fieldId, String frameId) throws CompileError {
+    mainWriter.writeBytecode(ByteCode.NEW, frameId + "struct" + fieldId);
+    mainWriter.writeBytecode(ByteCode.INVOKE_SPECIAL, frameId + "struct" + fieldId + '/' + "<init>()V");
+  }
+
+
+  public void addFieldToStruct(FrameField field, String structId, String fieldId, CompilerType type) throws CompileError {
+    String frameId = getFrameField(field);
+
+    mainWriter.writeBytecode(ByteCode.PUT_FIELD, frameId + "struct" + structId + '/' + fieldId + " " + litTypeToString(type));
+  }
+
   // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
   public void callFunction(FrameFunctionField field) throws CompileError {
@@ -257,6 +270,7 @@ public final class CompilerWriterHandler {
       }
 
       writeDefaultConstructor(writer);
+      writer.close2();
 
       // Create struct files
       for (FrameField field : frame.getFields()) {
@@ -323,11 +337,6 @@ public final class CompilerWriterHandler {
 
     mainWriter.writeLine("");
 
-    mainWriter.writeLine("aconst_null", true);
-    mainWriter.writeLine("astore " + DEFAULT_STATIC_LINK, true);
-
-    mainWriter.writeLine("");
-
     mainWriter.flush2();
   }
 
@@ -344,6 +353,11 @@ public final class CompilerWriterHandler {
   private File createFile(String name) throws CompileError {
     try {
       String filePath = OUTPUT_FOLDER + "/" + name + ".j";
+      File directory = new File(OUTPUT_FOLDER);
+
+      if (!directory.exists())
+        directory.mkdir();
+
       File file = new File(filePath);
 
       if (file.exists())

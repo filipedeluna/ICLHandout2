@@ -25,6 +25,6 @@ public final class VBool implements IValue {
 
   @Override
   public String asString() {
-    return val ? "1" : "0";
+    return val ? "true" : "false";
   }
 }

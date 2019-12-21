@@ -58,7 +58,11 @@ public final class ASTFunCall implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    // TODO fun call
+    for (ASTNode node : funcParams) {
+      node.compile(compiler);
+    }
+
+    compiler.callFunction(functionId);
   }
 
   @Override
