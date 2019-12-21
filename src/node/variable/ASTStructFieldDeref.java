@@ -30,7 +30,7 @@ public final class ASTStructFieldDeref implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-   // compiler.pushFrameField(id);
+    compiler.getFrameStructField(structId, fieldId);
   }
 
   @Override

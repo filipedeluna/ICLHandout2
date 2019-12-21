@@ -2,6 +2,7 @@ package compiler.frame;
 
 import compiler.CompilerType;
 import compiler.errors.CompileError;
+import node.ASTNode;
 
 import java.util.ArrayList;
 
@@ -25,22 +26,38 @@ public final class Frame {
     if (findField(fieldId) != null)
       throw new CompileError("Duplicate field " + fieldId, "add field to frame");
 
-    if (type == CompilerType.STRUCT)
-      fields.add(new FrameStructField(fieldId));
-    else
+    if (type.isLit()) {
       fields.add(new FrameField(fieldId, type));
+      return;
+    }
+
+    if (type == CompilerType.STRUCT) {
+      fields.add(new FrameStructField(fieldId));
+      return;
+    }
+    throw new CompileError("Invalid type, literal or struct expected from variable " + fieldId, "add field to frame");
   }
 
-  public void addStructField(String structId, String fieldId, CompilerType type) throws CompileError {
-    FrameField field = findField(structId);
+  public void addFunField(String fieldId, ASTNode node, ArrayList<CompilerType> paramTypes, CompilerType returnType) throws CompileError {
+    if (findField(fieldId) != null)
+      throw new CompileError("Duplicate field " + fieldId, "add fun field to frame");
 
-    if (field == null)
+    fields.add(new FrameFunctionField(fieldId, node, paramTypes, returnType));
+  }
+
+  public void addFieldToStructField(String structId, String fieldId, CompilerType type) throws CompileError {
+    FrameField structField = findField(structId);
+
+    if (structField == null)
       throw new CompileError("Variable " + fieldId + " not defined in any frame", "add field to struct");
 
-    if (!(field instanceof FrameStructField))
-      throw new CompileError("Variable " + fieldId + " is not a struct", "add struct field");
+    if (!(structField instanceof FrameStructField))
+      throw new CompileError("Variable " + fieldId + " is not a struct", "add field to struct");
 
-    ((FrameStructField) field).addStructField(fieldId, type);
+    if (((FrameStructField) structField).hasField(fieldId))
+      throw new CompileError("Duplicate field", "add field to struct");
+
+    ((FrameStructField) structField).addStructField(fieldId, type);
   }
 
   // Obtain a variable's respective frame field id and the list of sub-frames to get to it
@@ -49,6 +66,7 @@ public final class Frame {
 
     Frame exploredFrame = this;
     FrameField field;
+
     while (exploredFrame != null) {
       subFrameList.add(exploredFrame.frameId);
 
@@ -68,7 +86,7 @@ public final class Frame {
   }
 
   public boolean hasField(String id) {
-    return fields.contains(id);
+    return findField(id) != null;
   }
 
   public String getFrameId() {

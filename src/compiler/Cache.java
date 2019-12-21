@@ -1,7 +1,9 @@
 package compiler;
 
 import compiler.errors.CompileError;
+import node.ASTNode;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class Cache {
@@ -10,12 +12,14 @@ public class Cache {
   private CompilerType type;
   private LinkedHashMap<String, CompilerType> structParams;
 
+  private ArrayList<CompilerType> funParams;
+  private ASTNode funBlock;
+
   Cache() {
   }
 
   public String getField() throws CompileError {
-    if (field == null)
-      throw new CompileError("Register is empty", "get cache field");
+    checkError(field == null, "get field");
 
     String temp = field;
     field = null;
@@ -24,8 +28,7 @@ public class Cache {
   }
 
   public void setField(String field) throws CompileError {
-    if (this.field != null)
-      throw new CompileError("Register is not empty", "set cache field");
+    checkError(this.field != null, "set field");
 
     this.field = field;
   }
@@ -33,8 +36,7 @@ public class Cache {
   // --------------------------------------------
 
   public String getSubField() throws CompileError {
-    if (subField == null)
-      throw new CompileError("Register is empty", "get cache subfield");
+    checkError(subField == null, "get subfield");
 
     String temp = subField;
     subField = null;
@@ -43,8 +45,7 @@ public class Cache {
   }
 
   public void setSubField(String subField) throws CompileError {
-    if (this.subField != null)
-      throw new CompileError("Register is not empty", "set cache subfield");
+    checkError(this.subField != null, "set subfield");
 
     this.subField = subField;
   }
@@ -52,8 +53,7 @@ public class Cache {
   // --------------------------------------------
 
   public CompilerType getType() throws CompileError {
-    if (type == null)
-      throw new CompileError("Register is empty", "get cache type");
+    checkError(type == null, "get type");
 
     CompilerType temp = type;
     type = null;
@@ -62,11 +62,10 @@ public class Cache {
   }
 
   public void setType(CompilerType type) throws CompileError {
-    if (this.type != null)
-      throw new CompileError("Register is not empty", "set cache type");
+    checkError(this.type != null, "set type");
 
     if (type == CompilerType.STRUCT)
-      throw new CompileError("Invalid struct parameter", "set cache type");
+      throw new CompileError("Invalid struct parameter", "set type");
 
     this.type = type;
   }
@@ -74,8 +73,7 @@ public class Cache {
   // --------------------------------------------
 
   public LinkedHashMap<String, CompilerType> getStructParams() throws CompileError {
-    if (structParams == null)
-      throw new CompileError("Register is empty", "get cache struct params");
+    checkError(structParams == null, "get struct params");
 
     LinkedHashMap<String, CompilerType> temp = structParams;
     structParams = null;
@@ -84,10 +82,46 @@ public class Cache {
   }
 
   public void setTypeStruct(LinkedHashMap<String, CompilerType> structParams) throws CompileError {
-    if (this.structParams != null || type != null)
-      throw new CompileError("Register is not empty", "set cache struct params");
+    checkError(this.structParams != null || type != null, "set struct params");
 
     this.type = CompilerType.STRUCT;
     this.structParams = structParams;
+  }
+
+  // -----------------------------------------
+
+  public ArrayList<CompilerType> getFunParams() throws CompileError {
+    checkError(structParams == null, "get fun params");
+
+    ArrayList<CompilerType> temp = funParams;
+    funParams = null;
+
+    return temp;
+  }
+
+  public ASTNode getFunBlock() throws CompileError {
+    checkError(funBlock == null, "get fun block");
+
+    ASTNode temp = funBlock;
+    funBlock = null;
+
+    return temp;
+  }
+
+  public void setTypeFun(ArrayList<CompilerType> funParams, ASTNode funBlock) throws CompileError {
+    checkError(this.funParams != null || type != null, "set function params");
+
+    this.type = CompilerType.FUN;
+    this.funBlock = funBlock;
+    this.funParams = funParams;
+  }
+
+  /*
+    UTILS
+  */
+
+  private void checkError(boolean cond, String op) throws CompileError {
+    if (cond)
+      throw new CompileError("Cache register is empty", "cache - " + op);
   }
 }

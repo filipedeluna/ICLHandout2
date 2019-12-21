@@ -5,13 +5,14 @@ import interpreter.Interpreter;
 import interpreter.errors.*;
 import typechecker.TypeChecker;
 import typechecker.errors.*;
-//import compiler.Compiler;
-// import compiler.errors.*;
+import compiler.Compiler;
+import compiler.errors.*;
 
 import node.*;
 import node.block.*;
 import node.types.*;
 import node.variable.*;
+import node.initialization.*;
 import node.relational.*;
 import node.logical.*;
 import node.arithmetic.*;

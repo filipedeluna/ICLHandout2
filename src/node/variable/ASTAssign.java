@@ -1,16 +1,18 @@
 package node.variable;
 
 import compiler.Compiler;
+import compiler.CompilerType;
 import interpreter.Interpreter;
 import compiler.errors.CompileError;
 import interpreter.errors.InterpretationError;
 import node.ASTNode;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
-import types.IType;
-import types.TCell;
-import types.TVoid;
+import types.*;
 import values.*;
+
+import java.util.ArrayList;
+import java.util.Map.Entry;
 
 public class ASTAssign implements ASTNode {
   private String id;
@@ -34,20 +36,37 @@ public class ASTAssign implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    compiler.loadStaticLink();
-
     value.compile(compiler);
 
-    IValue value = compiler.peekTempValue();
+    CompilerType cType = compiler.cache.getType();
 
-    if (value instanceof VBool || value instanceof VInt)
-      compiler.addFrameField(id, "I");
+    if (cType.isLit() || cType == CompilerType.STRUCT) {
+      compiler.addFrameField(id, cType);
 
-    if (value instanceof VString)
-      compiler.addFrameField(id, "Ljava/lang/String;");
+      if (cType == CompilerType.STRUCT) {
+        for (Entry<String, CompilerType> structParam : compiler.cache.getStructParams().entrySet())
+          compiler.addFieldToFrameStructField(id, structParam.getKey(), structParam.getValue());
+      }
+    }
 
-    //if (value instanceof VStruct)
-    // compiler.
+    if (cType == CompilerType.FUN) {
+      ArrayList<CompilerType> funParams = compiler.cache.getFunParams();
+
+      CompilerType returnType = null;
+
+      if (((TFun) type).getReturnType() instanceof TInt)
+        returnType = CompilerType.INT;
+
+      if (((TFun) type).getReturnType() instanceof TBool)
+        returnType = CompilerType.BOOL;
+
+      if (((TFun) type).getReturnType() instanceof TString)
+        returnType = CompilerType.STRING;
+
+      ASTNode funBlock = compiler.cache.getFunBlock();
+
+      compiler.addFrameFunctionField(id, funBlock, funParams, returnType);
+    }
   }
 
   @Override

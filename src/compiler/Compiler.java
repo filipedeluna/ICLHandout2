@@ -10,6 +10,8 @@ import values.IValue;
 import values.VFun;
 import values.VStruct;
 
+import java.util.ArrayList;
+
 public final class Compiler {
   private CompilerWriterHandler compilerWriterHandler;
   private Frame currentFrame;
@@ -82,16 +84,34 @@ public final class Compiler {
     return tempValue != null;
   }
 
-  public void addFrameField(String id, String type) throws CompileError {
+  public void addFrameField(String id, CompilerType type) throws CompileError {
     if (currentFrame == null)
       throw new CompileError("Variable referencing outside a frame " + id, "add frame field");
 
     if (currentFrame.hasField(id))
       throw new CompileError("Duplicate variable " + id, "add frame field");
 
-    //String varIndex = currentFrame.addField(id);
-    // compilerWriterHandler.addFieldToFrameClassFile(currentFrame.getFrameId(), varIndex, type);
-    //compilerWriterHandler.addFrameField(varIndex, currentFrame);
+    currentFrame.addField(id, type);
+  }
+
+  public void addFrameFunctionField(String id, ASTNode node, ArrayList<CompilerType> paramTypes, CompilerType returnType) throws CompileError {
+    if (currentFrame == null)
+      throw new CompileError("Variable referencing outside a frame " + id, "add frame fun field");
+
+    if (currentFrame.hasField(id))
+      throw new CompileError("Duplicate variable " + id, "add frame fun field");
+
+    currentFrame.addFunField(id, node, paramTypes, returnType);
+  }
+
+  public void addFieldToFrameStructField(String structId, String fieldId, CompilerType type) throws CompileError {
+    if (currentFrame == null)
+      throw new CompileError("Variable referencing outside a frame " + structId, "add frame struct frame field");
+
+    if (currentFrame.hasField(structId))
+      throw new CompileError("Duplicate variable " + structId, "add frame struct frame field");
+
+    currentFrame.addFieldToStructField(structId, fieldId, type);
   }
 
   public void updateFrameField(String id, ASTNode value) throws CompileError {
@@ -107,6 +127,22 @@ public final class Compiler {
     compilerWriterHandler.putFrameField(frameField);
   }
 
+  public void updateFrameStructField(String structId, String fieldId, ASTNode value) throws CompileError {
+    if (currentFrame == null)
+      throw new CompileError("Variable referencing outside a frame " + structId, "update frame struct field");
+
+    FrameField frameField = currentFrame.getFrameField(structId);
+
+    if (!(frameField instanceof FrameStructField))
+      throw new CompileError("Trying to update a struct field on a non-struct value with id " + structId, "update frame struct field");
+
+    compilerWriterHandler.getFrameParentFields(frameField);
+
+    value.compile(this);
+
+    compilerWriterHandler.putFrameStructField((FrameStructField) frameField, fieldId);
+  }
+
   public void getFrameField(String fieldId) throws CompileError {
     if (currentFrame == null)
       throw new CompileError("Variable referencing outside a frame " + fieldId, "get frame field");
@@ -116,16 +152,25 @@ public final class Compiler {
     compilerWriterHandler.getFrameField(frameField);
   }
 
-  public void getFrameStructField(String fieldId) throws CompileError {
+  public CompilerType getFrameFieldType(String fieldId) throws CompileError {
+    if (currentFrame == null)
+      throw new CompileError("Variable referencing outside a frame " + fieldId, "get frame field type");
+
+    FrameField frameField = currentFrame.getFrameField(fieldId);
+
+    return frameField.getType();
+  }
+
+  public void getFrameStructField(String structId, String fieldId) throws CompileError {
     if (currentFrame == null)
       throw new CompileError("Variable referencing outside a frame " + fieldId, "get frame struct field");
 
-    FrameField frameField = currentFrame.getFrameField(fieldId);
+    FrameField frameField = currentFrame.getFrameField(structId);
 
     if (!(frameField instanceof FrameStructField))
       throw new CompileError("Variable is not a struct " + fieldId, "get frame struct field");
 
-    compilerWriterHandler.getFrameField(frameField);
+    compilerWriterHandler.getFrameStructField((FrameStructField) frameField, fieldId);
   }
 
   public void compare(ByteCode comparisonByteCode) throws CompileError {

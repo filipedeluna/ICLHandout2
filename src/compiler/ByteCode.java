@@ -18,8 +18,12 @@ public enum ByteCode {
   LOAD("aload"),
 
   INVOKE_SPECIAL("invokespecial"),
+  INVOKE_STATIC("invokestatic"),
+  INVOKE_VIRTUAL("invokevirtual"),
+  INVOKE_NON_VIRTUAL("invokenonvirtual"),
   PUT_FIELD("putfield"),
   GET_FIELD("getfield"),
+  GET_STATIC("getstatic"),
 
   CONST_NULL("aconst_null"),
   NEW("new"),

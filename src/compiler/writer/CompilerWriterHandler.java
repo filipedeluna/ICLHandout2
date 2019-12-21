@@ -31,6 +31,7 @@ public final class CompilerWriterHandler {
 
   public CompilerWriterHandler(Compiler compiler) throws CompileError {
     try {
+      this.compiler = compiler;
       File mainFile = createFile("main.j");
       mainWriter = new BufferedCompilerWriter(mainFile);
 
@@ -130,9 +131,9 @@ public final class CompilerWriterHandler {
     String frameId = subFrames.get(subFrames.size() - 1);
 
     if (frameField instanceof FrameStructField)
-      mainWriter.writeBytecode(ByteCode.PUT_FIELD, frameId + '/' + fieldId + " " + litTypeToString(type));
-    else
       mainWriter.writeBytecode(ByteCode.PUT_FIELD, frameId + '/' + fieldId + " L" + frameId + "struct" + fieldId);
+    else
+      mainWriter.writeBytecode(ByteCode.PUT_FIELD, frameId + '/' + fieldId + " " + litTypeToString(type));
   }
 
   public void compare(ByteCode comparisonByteCode) throws CompileError {
@@ -192,16 +193,39 @@ public final class CompilerWriterHandler {
 
   // FUNCTIONS ----------------------------------------------------------------------------------------------------
 
+  public void callFunction(FrameFunctionField field) throws CompileError {
+    ArrayList<String> subFrames = field.getFrameList();
+
+    loadStaticLink();
+
+    if (subFrames.size() > 1)
+      getFrameParentFields(field);
+
+    String frameId = subFrames.get(subFrames.size() - 1);
+
+    StringBuilder args = new StringBuilder();
+
+    for (CompilerType compilerType : field.getParams())
+      args.append(litTypeToString(compilerType));
+
+    CompilerType compilerReturnType = field.getReturnType();
+
+    String returnType = compilerReturnType == CompilerType.VOID
+        ? "V"
+        : litTypeToString(compilerReturnType);
+
+    mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, frameId + "/" + field.getFieldId() + "(" + args + ")" + returnType);
+  }
 
   // PRINT --------------------------------------------------------------------------------------------------------
 
   public void startPrint() throws CompileError {
-    mainWriter.writeLine("getstatic java/lang/System/out Ljava/io/PrintStream;");
+    mainWriter.writeBytecode(ByteCode.GET_STATIC, "java/lang/System/out Ljava/io/PrintStream;");
   }
 
   public void endPrint(CompilerType type) throws CompileError {
-    mainWriter.writeLine("invokestatic java/lang/String/valueOf(" + litTypeToString(type) + ")Ljava/lang/String;");
-    mainWriter.writeLine("invokevirtual java/io/PrintStream/println(Ljava/lang/String;)V");
+    mainWriter.writeBytecode(ByteCode.INVOKE_STATIC, "java/lang/String/valueOf(" + litTypeToString(type) + ")Ljava/lang/String;");
+    mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/io/PrintStream/println(Ljava/lang/String;)V");
   }
 
   /*
@@ -272,7 +296,7 @@ public final class CompilerWriterHandler {
 
           mainWriter.writeLine("");
 
-          mainWriter.writeLine(".method public static main(" + args + ")" + returnType);
+          mainWriter.writeLine(".method public static " + field.getFieldId() + "(" + args + ")" + returnType);
           node.compile(compiler);
           mainWriter.writeLine(".end method");
 

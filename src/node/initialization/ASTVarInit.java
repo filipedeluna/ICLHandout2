@@ -2,6 +2,7 @@ package node.initialization;
 
 import compiler.ByteCode;
 import compiler.Compiler;
+import compiler.CompilerType;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
@@ -28,7 +29,10 @@ public class ASTVarInit implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
+    compiler.getFrameField(var);
 
+    CompilerType type = compiler.getFrameFieldType(var);
+    compiler.cache.setType(type);
   }
 
   @Override

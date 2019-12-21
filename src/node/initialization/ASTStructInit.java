@@ -1,15 +1,15 @@
 package node.initialization;
 
 import compiler.Compiler;
+import compiler.CompilerType;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
 import node.ASTNode;
+import node.variable.FunParam;
 import typechecker.TypeChecker;
 import typechecker.errors.TypeCheckError;
-import types.IType;
-import types.TCell;
-import types.TStruct;
+import types.*;
 import values.*;
 
 public class ASTStructInit implements ASTNode {
@@ -28,21 +28,6 @@ public class ASTStructInit implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    /*
-    if (value instanceof VInt || value instanceof VBool) {
-      compiler.emit(ByteCode.PUSH, value.asString());
-      return;
-    }
-
-    if (value instanceof VString) {
-      compiler.emit(ByteCode.LOAD_C, "\"" + value.asString() + "\"");
-      return;
-    }
-
-    compiler.pushTempValue(value);
-
-    throw new CompileError("Invalid value type", "variable initialization");
-    */
   }
 
   @Override

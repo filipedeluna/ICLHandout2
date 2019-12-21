@@ -1,6 +1,7 @@
 package node.variable;
 
 import compiler.Compiler;
+import compiler.CompilerType;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
@@ -32,7 +33,9 @@ public final class ASTStructFieldVar implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-   // compiler.pushFrameField(id);
+    compiler.cache.setType(CompilerType.STRUCT_CELL);
+    compiler.cache.setField(structId);
+    compiler.cache.setSubField(fieldId);
   }
 
   @Override

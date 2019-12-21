@@ -1,6 +1,7 @@
 package node.initialization;
 
 import compiler.Compiler;
+import compiler.CompilerType;
 import compiler.errors.CompileError;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
@@ -38,21 +39,18 @@ public class ASTFunInit implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    /*
-    if (value instanceof VInt || value instanceof VBool) {
-      compiler.emit(ByteCode.PUSH, value.asString());
-      return;
+    ArrayList<CompilerType> types = new ArrayList<>();
+
+    for (FunParam funParam : funParams) {
+      if (funParam.getType() instanceof TString)
+        types.add(CompilerType.STRING);
+      if (funParam.getType() instanceof TBool)
+        types.add(CompilerType.BOOL);
+      if (funParam.getType() instanceof TInt)
+        types.add(CompilerType.INT);
     }
 
-    if (value instanceof VString) {
-      compiler.emit(ByteCode.LOAD_C, "\"" + value.asString() + "\"");
-      return;
-    }
-
-    compiler.pushTempValue(value);
-
-    throw new CompileError("Invalid value type", "variable initialization");
-    */
+    compiler.cache.setTypeFun(types, block);
   }
 
   @Override
@@ -67,7 +65,7 @@ public class ASTFunInit implements ASTNode {
       if (paramNames.contains(funParam.getId()))
         throw new TypeCheckError("Duplicate parameter name: " + funParam.getId(), "function initialization");
 
-      if (!(paramType instanceof TInt) && !(paramType instanceof TBool) && !(paramType instanceof TString) && !(paramType instanceof TStruct))
+      if (!(paramType instanceof TInt) && !(paramType instanceof TBool) && !(paramType instanceof TString))
         throw new TypeCheckError("Invalid function parameter type", "function initialization");
 
       paramNames.add(funParam.getId());
