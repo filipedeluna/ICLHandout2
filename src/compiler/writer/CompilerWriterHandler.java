@@ -182,6 +182,9 @@ public final class CompilerWriterHandler {
     String frameId = getFrameField(field);
     CompilerType type = field.getStructFieldType(structFieldId);
 
+    if (type == null)
+      throw new CompileError("Field does not exist in struct " + field.getFieldId(), "get frame struct field");
+
     mainWriter.writeBytecode(ByteCode.GET_FIELD, frameId + "struct" + field.getFieldId() + '/' + structFieldId + " " + litTypeToString(type));
   }
 
@@ -249,10 +252,16 @@ public final class CompilerWriterHandler {
     mainWriter.writeBytecode(ByteCode.DUP);
     mainWriter.writeBytecode(ByteCode.INVOKE_SPECIAL, "java/lang/StringBuffer/<init>()V");
 
-    mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/lang/StringBuffer/append(java/lang/String;)Ljava/lang/StringBuffer;");
+    mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/lang/StringBuffer/append(Ljava/lang/String;)Ljava/lang/StringBuffer;");
 
-    mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/lang/StringBuffer/append(java/lang/String;)Ljava/lang/StringBuffer;");
+    mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/lang/StringBuffer/append(Ljava/lang/String;)Ljava/lang/StringBuffer;");
     mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/lang/StringBuffer/toString()Ljava/lang/String;");
+  }
+
+  public void stringCompare() throws CompileError {
+    mainWriter.writeBytecode(ByteCode.INVOKE_VIRTUAL, "java/lang/String/compare(Ljava/lang/String;Ljava/lang/String;)I");
+    mainWriter.writeBytecode(ByteCode.CONST_1);
+    compare(ByteCode.EQUALS);
   }
 
   /*

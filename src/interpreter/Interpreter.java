@@ -3,6 +3,8 @@ package interpreter;
 import interpreter.errors.InterpretationError;
 import values.IValue;
 import values.VCell;
+import values.VStruct;
+import values.VStructCell;
 
 public class Interpreter {
   private Environment environment;
@@ -32,7 +34,10 @@ public class Interpreter {
     if (!(ref instanceof VCell))
       throw new InterpretationError("Unexpected type assigned to variable", "apply value to variable", ref.type());
 
-    memory.changeCellValue(((VCell) ref).get(), newValue);
+    if (ref instanceof VStructCell)
+      memory.changeStructCellFieldValue((VStructCell) ref, newValue);
+    else
+      memory.changeCellValue(((VCell) ref).get(), newValue);
   }
 
   public IValue deref(String id) throws InterpretationError {

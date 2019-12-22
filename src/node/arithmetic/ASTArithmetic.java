@@ -53,7 +53,7 @@ public class ASTArithmetic implements ASTNode {
     }
 
     if (v1 instanceof VString)
-      return new VString(v1.asString() + v2.asString());
+      return new VString(v1.asString() + v2.asString(), false);
 
     if (operation == ArithmeticOperation.ADD) {
       if (v1 instanceof VStruct) {
@@ -84,8 +84,8 @@ public class ASTArithmetic implements ASTNode {
           compiler.stringConcat();
 
         if (type == CompilerType.STRUCT) {
-          for (Entry<String, CompilerType> entry : cacheEntry2.getStructParams().entrySet())
-            compiler.addFieldToFrameStructField(cacheEntry.getField(), entry.getKey(), entry.getValue());
+          for (Entry<String, CompilerType> entry : cacheEntry.getStructParams().entrySet())
+            compiler.addFieldToFrameStructField(cacheEntry2.getField(), entry.getKey(), entry.getValue());
         }
 
         break;

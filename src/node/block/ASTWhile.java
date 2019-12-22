@@ -50,6 +50,8 @@ public final class ASTWhile implements ASTNode {
   public IType typeCheck(TypeChecker typeChecker) throws TypeCheckError {
     IType condType = condition.typeCheck(typeChecker);
 
+    action.typeCheck(typeChecker);
+
     if (!(condType instanceof TBool))
       throw new TypeCheckError("Invalid type for condition", "while", condType);
 

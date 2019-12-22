@@ -13,6 +13,6 @@ public final class TString implements IType {
 
   @Override
   public String name() {
-    return "void";
+    return "string";
   }
 }

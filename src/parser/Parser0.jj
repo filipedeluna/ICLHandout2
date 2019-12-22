@@ -324,7 +324,7 @@ ASTNode Lit() :
 {
     t = <Num> { return new ASTInt(new VInt(Integer.parseInt(t.image))); }
     | t = <BOOL> { return new ASTBool(new VBool(Boolean.parseBoolean(t.image))); }
-    | t = <STRING> { return new ASTString(new VString(t.image)); }
+    | t = <STRING> { return new ASTString(new VString(t.image, true)); }
 }
 
 ASTNode Decl() :
@@ -384,7 +384,7 @@ ASTNode LitInit() :
     t = <Num> { return new ASTInit(new VInt(Integer.parseInt(t.image))); }
     | t = <BOOL> { return new ASTInit(new VBool(Boolean.parseBoolean(t.image))); }
     | t = <Id> { return new ASTVarInit(t.image); }
-    | t = <STRING> { return new ASTInit(new VString(t.image)); }
+    | t = <STRING> { return new ASTInit(new VString(t.image, true)); }
 }
 
 ASTStruct Struct() :

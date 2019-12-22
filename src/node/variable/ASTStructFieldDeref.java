@@ -1,7 +1,10 @@
 package node.variable;
 
 import compiler.Compiler;
+import compiler.cache.CacheEntry;
 import compiler.errors.CompileError;
+import compiler.frame.FrameField;
+import compiler.frame.FrameStructField;
 import interpreter.Interpreter;
 import interpreter.errors.InterpretationError;
 import node.ASTNode;
@@ -30,7 +33,9 @@ public final class ASTStructFieldDeref implements ASTNode {
 
   @Override
   public void compile(Compiler compiler) throws CompileError {
-    compiler.getFrameStructField(structId, fieldId);
+    FrameStructField field = compiler.getFrameStructField(structId, fieldId);
+
+    compiler.cache.push(new CacheEntry(field.getStructFieldType(fieldId)));
   }
 
   @Override

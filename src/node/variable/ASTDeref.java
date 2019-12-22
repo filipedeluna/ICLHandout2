@@ -30,8 +30,7 @@ public class ASTDeref implements ASTNode {
   public void compile(Compiler compiler) throws CompileError {
     FrameField frameField = compiler.getFrameField(id);
 
-    if (frameField.getType().isLit())
-      compiler.cache.push(new CacheEntry(frameField.getType()));
+    compiler.cache.push(new CacheEntry(frameField.getType(), id));
   }
 
   @Override

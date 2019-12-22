@@ -46,9 +46,9 @@ public final class ASTStruct implements ASTNode {
     LinkedHashMap<String, CompilerType> frameParams = new LinkedHashMap<>();
     CacheEntry cacheEntry;
 
-    for (int i = structParams.size() - 1; i >= 0; i--) {
-      structParams.get(i).compile(compiler);
-      id = structParams.get(i).getId();
+    for (ASTStructParam structParam : structParams) {
+      structParam.compile(compiler);
+      id = structParam.getId();
 
       cacheEntry = compiler.cache.pop();
       type = cacheEntry.getType();

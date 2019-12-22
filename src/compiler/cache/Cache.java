@@ -11,7 +11,7 @@ public class Cache {
   }
 
   public void push(CacheEntry entry) {
-    entries.addLast(entry);
+    entries.addFirst(entry);
   }
 
   public CacheEntry pop() throws CompileError {

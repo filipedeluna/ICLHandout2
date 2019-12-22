@@ -84,6 +84,8 @@ public class ASTApply implements ASTNode {
 
       if (!fieldType.equals(type2))
         throw new TypeCheckError("Invalid value applied, types do not match", "apply", fieldType, type2);
+
+      return TVoid.SINGLETON;
     }
 
     IType varType = typeChecker.find(type1Id);

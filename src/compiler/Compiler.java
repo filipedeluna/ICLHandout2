@@ -191,7 +191,7 @@ public final class Compiler {
       cache.push(new CacheEntry(returnType));
   }
 
-  public void getFrameStructField(String structId, String fieldId) throws CompileError {
+  public FrameStructField getFrameStructField(String structId, String fieldId) throws CompileError {
     if (currentFrame == null)
       throw new CompileError("Variable referencing outside a frame " + structId, "get frame struct field");
 
@@ -201,10 +201,16 @@ public final class Compiler {
       throw new CompileError("Variable is not a struct " + structId, "get frame struct field");
 
     compilerWriterHandler.getFrameStructField((FrameStructField) frameField, fieldId);
+
+    return (FrameStructField) frameField;
   }
 
   public void compare(ByteCode comparisonByteCode) throws CompileError {
     compilerWriterHandler.compare(comparisonByteCode);
+  }
+
+  public void stringCompare() throws CompileError {
+    compilerWriterHandler.stringCompare();
   }
 
   public int countLines(ASTNode action) throws CompileError {

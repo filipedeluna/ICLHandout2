@@ -6,8 +6,12 @@ import types.TString;
 public final class VString implements IValue {
   private String val;
 
-  public VString(String val) {
-    this.val = val.substring(1, val.length() - 1);
+
+  public VString(String val, boolean trim) {
+    if (trim)
+      this.val = val.substring(1, val.length() - 1);
+    else
+      this.val = val;
   }
 
   @Override

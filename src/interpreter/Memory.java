@@ -3,6 +3,8 @@ package interpreter;
 import interpreter.errors.InterpretationError;
 import values.IValue;
 import values.VCell;
+import values.VStruct;
+import values.VStructCell;
 
 import java.util.HashMap;
 
@@ -38,6 +40,10 @@ class Memory {
 
   void changeCellValue(int address, IValue value) {
     memory.put(address, new MemoryCell(value));
+  }
+
+  void changeStructCellFieldValue(VStructCell ref, IValue newValue) {
+    ((VStruct) memory.get(ref.get()).getValue()).put(ref.getFieldId(), newValue);
   }
 
   /*

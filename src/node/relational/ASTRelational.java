@@ -101,7 +101,7 @@ public class ASTRelational implements ASTNode {
           compiler.compare(ByteCode.EQUALS);
 
         if (type == CompilerType.STRING)
-          ;// TODO strcmp
+          compiler.stringCompare();
         break;
       case DIFFERS:
         compiler.compare(ByteCode.NOT_EQUALS);
