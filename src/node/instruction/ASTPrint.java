@@ -32,10 +32,10 @@ public class ASTPrint implements ASTNode {
   public void compile(Compiler compiler) throws CompileError {
     compiler.startPrint();
 
+    node.compile(compiler);
+
     CacheEntry cacheEntry = compiler.cache.pop();
     CompilerType type = cacheEntry.getType();
-
-    node.compile(compiler);
 
     compiler.endPrint(type);
   }
