@@ -1,4 +1,4 @@
 # ICLHandout2
 Handout 2 Project
 
-Filipe Luna - 48425
+The purpose of this handout was to write a parser, interpreter and compiler for a pseudo programming language. The program uses JavaCC to build the parser and compiles to Java bytecode.
